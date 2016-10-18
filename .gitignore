@@ -1,0 +1,5 @@
+# LaTeX files
+*.pdf
+
+# Mac Files
+.DS_Store
