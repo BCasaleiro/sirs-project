@@ -1,1 +1,1 @@
-# sirs-project
+# SIRS Project
