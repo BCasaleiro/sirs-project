@@ -1,6 +1,7 @@
 # LaTeX files
 *.pdf
 *.aux
+*.fls
 *.glo
 *.idx
 *.log
@@ -23,6 +24,7 @@
 *.mtc1
 *.out
 *.synctex.gz
+*.fdb_latexmk
 
 # Mac Files
 .DS_Store
