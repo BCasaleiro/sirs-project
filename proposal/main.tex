@@ -6,69 +6,106 @@
 \begin{document}
 
 \begin{titlepage}
-\begin{center}
-  {\scshape \huge Project Title \par}                                                                         % TODO change the title
-  \vspace{1cm}
+  \begin{center}
+    {\scshape \huge Truthful Emergencies \par}
+    \vspace{1cm}
 
-  {\scshape \LARGE Proposal \par}
-  \vspace{1.5cm}
+    {\scshape \LARGE Proposal \par}
+    \vspace{1.5cm}
 
-  {\scshape \Large Network and Computer Security \par}
-  \vspace{0.5cm}
+    {\scshape \Large Network and Computer Security \par}
+    \vspace{0.5cm}
 
-  {\Large Alameda \par}
-  \vfill
+    {\Large Alameda \par}
+    \vfill
 
-  {\itshape \Large Group 11 \par}
-  \vfill
+    {\itshape \Large Group 11 \par}
+    \vfill
 
-\begin{tabular}{l l l}
-  \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & Bernardo Casaleiro & 87827\\
-  \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & João Godinho & 87830\\                       % TODO change the photo
-  \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & Miguel Pinto & nnnnn\\                       % TODO change the photo and student number
-\end{tabular}
-  \vfill
+    \begin{tabular}{l l l}
+      \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & Bernardo Casaleiro & 87827\\
+      \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & João Godinho & 87830\\                       % TODO change the photo
+      \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & Miguel Pinto & nnnnn\\                       % TODO change the photo and student number
+    \end{tabular}
+    \vfill
 
-  {\large \today\par}
-\end{center}
+    {\large \today\par}
+  \end{center}
 \end{titlepage}
 
 \section{Problem}
+What's the cost of a human life?
+First response emergency systems are a limited resource. Their usage makes a difference in life-or-death situations!
+
+Requesting an ambulance is a serious matter.
+It should be simple, secure, fast and first of all always available.
+For that the dispatch center must be fault tolerant.
+
+It should separate the real requests from the false ones and provide a response accordingly.
+Improper usage must be punished while real requests should trigger an appropriate response.
 
 \section{Requirements}
-	\subsection{Application Requirements}
-		\begin{enumerate}
-			\item User must be able to send a request of an emergency, that includes id, location and situation
 
-			\item User will be inserted on a queue depending on his rating
-			
-			\item The server must receive the request and save it on a database and on the log
+\subsection{Application}
+\subsubsection{Functional Requirements}
 
-			\item The server must send the confirmation that an ambulance is en route, if the user has no faults 
+\begin{enumerate}
+  \item User must be able to send a request of an emergency, that includes id, location and situation.
+  \item User will be inserted on a queue depending on his rating.
+  \item The server must receive the request and save it on a database and on the log.
+  \item The server must send the confirmation that an ambulance is en route, if the user has no faults.
+  \item The server must rate the user at the end of the request.
+\end{enumerate}
 
-			\item The server must rate the user at the end of the request
-			
- 
-		\end{enumerate}
+\subsubsection{Non-functional Requirements}
+Our main goal is to build a secure application, not forgetting that in real life,
+our service couldn't be slow due to the fact that time in an emergency situation is crucial.
 
-	\subsection{Functional Security Requirements}
-		\begin{enumerate}
-			\item Non-repudiation using certification
-			
-			\item Keeping the server running in case of DoS
-			
-			\item There will be a firewall, responsible for filtering the requests
-
-			\item Auditing mechanisms will be implemented
-
-			\item Establish a secure channel between user and Dispatch Central
-
-		\end{enumerate}
-	\subsection{Non-Functional Security Requirements}
-			Our main goal is to build a secure application, not forgetting that in real life, our service couldn't be slow due to the fact that time in an emergency situation is crucial.
-
+\subsection{Security Requirements}
+\begin{enumerate}
+  \item Non-repudiation.
+  \item Keeping the server running in case of DoS.
+  \item Firewall, responsible for filtering the requests.
+  \item Auditing mechanisms.
+  \item Secure channel between user and Dispatch Central.
+\end{enumerate}
 
 \section{Proposed solution}
+
+% TODO make a little explanation
+
+\subsection{Basic solution}
+In this solution we assume that the communications between the User and the Dispatch Central are secure.
+The main goal of this sprint is to build the foundation and the architecture to facilitate the implementation of the security parts.
+
+There are no keys or certificates involved in this step so non-repudiation will not be our goal here.
+
+We will have a centralized Dispatch Central that will receive all the requests from the Users.
+
+Auditing mechanisms will be considered in this phase and for that we will use logs on the Central side.
+Everytime a request is received it is registered in a log for the auditing personal be able to review.
+Each entry will have a timestamp and the contents of the message (ID, Location, Situation).
+
+After processing the request, and approving it, the Dispatch sends the confirmation message that an ambulance is on the way.
+Otherwise the user will be accounted for the incorrect usage and warned of the possible consequences of further reckless behavior.
+
+\subsection{Intermidiate solution}
+In this phase, we will create manually all the keys and certificates\footnote{self-signed}.
+
+Each entity will have his own set of keys, but the certificates will have to be requested to the CA by the user to get his public key.        % TODO confirm
+This will give a structure to implement non-repudiation taking the assumption that the private keys are never stolen
+by some sort of malware or someone accessing the machine physically.
+
+Each message sent by the user will be signed with his own private key.
+With the previous assumption we can guarantee that the user sending the message was really him.
+
+The Dispatch Central will retrieve the user public key from the certificate that was requested after receiving and deciphering the message.   % TODO confirm
+The procedure is the same for the message flow from the Dispatch to the user.
+
+\subsection{Advanced solution}
+On this last phase of the project, we will focus on fault tolerance on the primary server (DoS, crash, etc.).
+We will also focus in building a firewall responsible for detecting bad or duplicate requests,
+redirecting connections to secure ports and analyzing packet contents.
 
 \section{Tool references}
 
