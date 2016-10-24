@@ -24,7 +24,7 @@
 
     \begin{tabular}{l l l}
       \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & Bernardo Casaleiro & 87827\\
-      \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & João Godinho & 87830\\                       % TODO change the photo
+      \includegraphics[width=10mm, height=10mm]{img/joao.jpeg} & João Godinho & 87830\\                       % TODO change the photo
       \includegraphics[width=10mm, height=10mm]{img/bernardo.jpeg} & Miguel Pinto & nnnnn\\                       % TODO change the photo and student number
     \end{tabular}
     \vfill
@@ -48,13 +48,14 @@ Improper usage must be punished while real requests should trigger an appropriat
 
 \subsection{Application}
 \subsubsection{Functional Requirements}
-
 \begin{enumerate}
   \item User must be able to send a request of an emergency, that includes id, location and situation.
   \item User will be inserted on a queue depending on his rating.
   \item The server must receive the request and save it on a database and on the log.
   \item The server must send the confirmation that an ambulance is en route, if the user has no faults.
   \item The server must rate the user at the end of the request.
+  \item The server must be able to block a user from sending more requests                                                         % TODO review
+  \item The client must be accounted for incorrect usage of resources and reckless behavior
 \end{enumerate}
 
 \subsubsection{Non-functional Requirements}
@@ -71,8 +72,6 @@ our service couldn't be slow due to the fact that time in an emergency situation
 \end{enumerate}
 
 \section{Proposed solution}
-
-% TODO make a little explanation
 
 \subsection{Basic solution}
 In this solution we assume that the communications between the User and the Dispatch Central are secure.
@@ -92,14 +91,14 @@ Otherwise the user will be accounted for the incorrect usage and warned of the p
 \subsection{Intermidiate solution}
 In this phase, we will create manually all the keys and certificates\footnote{self-signed}.
 
-Each entity will have his own set of keys, but the certificates will have to be requested to the CA by the user to get his public key.        % TODO confirm
+Each entity will have his own set of keys, but the certificates will have to be requested to the CA by the user to get his public key.        % TODO review
 This will give a structure to implement non-repudiation taking the assumption that the private keys are never stolen
 by some sort of malware or someone accessing the machine physically.
 
 Each message sent by the user will be signed with his own private key.
 With the previous assumption we can guarantee that the user sending the message was really him.
 
-The Dispatch Central will retrieve the user public key from the certificate that was requested after receiving and deciphering the message.   % TODO confirm
+The Dispatch Central will retrieve the user public key from the certificate that was requested after receiving and deciphering the message.   % TODO review
 The procedure is the same for the message flow from the Dispatch to the user.
 
 \subsection{Advanced solution}
