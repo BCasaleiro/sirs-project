@@ -34,44 +34,55 @@
 \end{titlepage}
 
 \section{Problem}
-What's the cost of a human life?
 First response emergency systems are a limited resource. Their usage makes a difference in life-or-death situations!
 
 Requesting an ambulance is a serious matter.
 It should be simple, secure, fast and first of all always available.
-For that the dispatch center must be fault tolerant.
+For that the Dispatch Center must be fault tolerant.
 
 It should separate the real requests from the false ones and provide a response accordingly.
 Improper usage must be punished while real requests should trigger an appropriate response.
 
 \section{Requirements}
 
-\subsection{Application}
-\subsubsection{Functional Requirements}
+\subsection{Application Requirements}
 \begin{enumerate}
-  \item User must be able to send a request of an emergency, that includes id, location and situation.
-  \item User will be inserted on a queue depending on his rating.
-  \item The server must receive the request and save it on a database and on the log.
-  \item The server must send the confirmation that an ambulance is en route, if the user has no faults.
-  \item The server must rate the user at the end of the request.
-  \item The server must be able to block a user from sending more requests                                                         % TODO review
-  \item The client must be accounted for incorrect usage of resources and reckless behavior
+  \item Send a request of an emergency.
+  \item Consult the expected time for the request to be answered.
 \end{enumerate}
 
-\subsubsection{Non-functional Requirements}
-Our main goal is to build a secure application, not forgetting that in real life,
-our service couldn't be slow due to the fact that time in an emergency situation is crucial.
+\subsection{Server Requirements}
+\begin{enumerate}
+  \item Insert a request in a queue depending on the user rating.
+  \item Log the requests.
+  \item Send the expected time of response to the user
+  \item Send the confirmation that an ambulance is en route.
+  \item Rate the user accordingly at the end of the request.
+  \item Block a user for abusive usage.                                                         % TODO review
+\end{enumerate}
 
 \subsection{Security Requirements}
 \begin{enumerate}
   \item Non-repudiation.
-  \item Keeping the server running in case of DoS.
+  \item Fault tolerance to DoS.
   \item Firewall, responsible for filtering the requests.
   \item Auditing mechanisms.
   \item Secure channel between user and Dispatch Central.
 \end{enumerate}
 
+\subsection{Non-functional Requirements}
+Our main goal is to build a secure application, not forgetting that in real life,
+our service couldn't be slow due to the fact that time in an emergency situation is crucial.
+
 \section{Proposed solution}
+
+\begin{center}
+  \textit{What's the cost of a human life?}
+\end{center}
+
+There's no perfect solution and everything breaks eventually.
+Our goal is to make it harder to break with the time and money we have at our disposal.
+So with this in mind we design this solution.
 
 \subsection{Basic solution}
 In this solution we assume that the communications between the User and the Dispatch Central are secure.
@@ -88,7 +99,7 @@ Each entry will have a timestamp and the contents of the message (ID, Location, 
 After processing the request, and approving it, the Dispatch sends the confirmation message that an ambulance is on the way.
 Otherwise the user will be accounted for the incorrect usage and warned of the possible consequences of further reckless behavior.
 
-\subsection{Intermidiate solution}
+\subsection{Intermediate solution}
 In this phase, we will create manually all the keys and certificates\footnote{self-signed}.
 
 Each entity will have his own set of keys, but the certificates will have to be requested to the CA by the user to get his public key.        % TODO review
