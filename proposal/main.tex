@@ -56,8 +56,8 @@ trigger an appropriate response.
 
 \subsection{Application Requirements}
 \begin{enumerate}
-  \item Send a request of an emergency.
-  \item Consult the expected time for the request to be answered.
+  \item Send an emergency request.
+  \item Inform the estimated time for the user's request to be answered.
 \end{enumerate}
 
 \subsection{Server Requirements}
@@ -65,7 +65,7 @@ trigger an appropriate response.
   \item Insert a request in a queue depending on the user rating.
   \item Log the requests.
   \item Send the expected time of response to the user
-  \item Send the confirmation that an ambulance is en route.
+  \item Send the confirmation that an ambulance is on route.
   \item Rate the user accordingly at the end of the request.
   \item Temporarily block a user for abusive usage.
 \end{enumerate}
@@ -91,7 +91,7 @@ our service couldn't be slow due to the fact that time in an emergency situation
 
 There's no perfect solution and everything breaks eventually.
 Our goal is to make it harder to break with the time and money we have at our disposal.
-So with this in mind we design this solution.
+So with this in mind we designed this solution.
 
 \subsection{Basic solution}
 In this solution we assume that the communications between the User and the Dispatch Central are secure.
