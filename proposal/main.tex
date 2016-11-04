@@ -141,10 +141,11 @@ redirecting connections to secure ports and analyzing packet contents.
   \item \textbf{[Well-Tested]} \href{https://trello.com/}{Trello} - Task assignement and management.
   \item \textbf{[Well-Tested]} \href{https://www.mysql.com}{MySQL} - Database to save the users.
   \item \textbf{[Well-Tested]} \href{https://docs.oracle.com/javase/7/docs/api/java/net/Socket.html}{java.net.Socket} - Establish a connection between the server and the application.
-  \item \textbf{[Well-Tested]} \href{http://dev.mysql.com/downloads/connector/j/}{mysql-connector-java} - Driver to use MySQL with Java
-  \item \textbf{[Tested]} \href{https://www.docker.com}{Docker} - Use of Docker's containers to simulate the multiple servers.
-  \item \textbf{[Tested]} \href{https://www.nginx.com}{nginx} - Used to create a load balance server.
+  \item \textbf{[Well-Tested]} \href{http://dev.mysql.com/downloads/connector/j/}{mysql-connector-java} - Driver to use MySQL with Java.
   \item \textbf{[Tested]} \href{https://letsencrypt.org}{Let's Encrypt} - Free and Automated Open Source CA.
+  \item \textbf{[Tested] ?Possibility?} \href{https://www.docker.com}{Docker} - Use of Docker's containers to simulate the multiple servers.
+  \item \textbf{[Tested] ?Possibility?} \href{https://www.nginx.com}{nginx} - Used to create a load balance server.
+  \item \textbf{[Found] ?Possibility?} \href{https://docs.docker.com/swarm/overview/}{Docker-Swarm} - Used for server replication.
 \end{enumerate}
 
 \section{Work Plan}
@@ -181,27 +182,13 @@ The jobs might be basic(b), intermediate(i) or advanced(a) and testing(t).
     Setup docker & & & X\\ \hline
     Setup Certificate Authority & X & & \\ \hline
     Setup nginx & & & X \\ \hline
-    
+
     \end{tabular}
 \end{center}
 
-
-\section{Appendix}
-\subsection{Basic solution}
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.60]{img/basic-solution.png}
-\end{figure}
-
-\subsection{Intermediate solution}
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.45]{img/intermediate-solution.png}
-\end{figure}
-
 \newpage
 
-\subsection{Advanced solution}
+\section{Appendix}
 \begin{figure}[h]
     \centering
     \includegraphics[scale=0.50]{img/advanced-solution.png}
