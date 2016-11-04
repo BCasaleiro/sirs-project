@@ -32,7 +32,7 @@
     \vfill
 
     \begin{tabular}{l l l}
-      \includegraphics[width=20mm, height=20mm]{img/miguel.jpg} & Miguel Pinto & 79060\\
+      \includegraphics[width=20mm, height=20mm]{img/miguel.png} & Miguel Pinto & 79060\\
       \includegraphics[width=20mm, height=20mm]{img/bernardo.jpeg} & Bernardo Casaleiro & 87827\\
       \includegraphics[width=20mm, height=20mm]{img/joao.jpeg} & João Godinho & 87830\\
     \end{tabular}
@@ -58,15 +58,19 @@ trigger an appropriate response.
 \begin{enumerate}
   \item Send an emergency request.
   \item Inform the estimated time for the user's request to be answered.
+  \item Confirm or deny if there is an emergency nearby.
 \end{enumerate}
 
 \subsection{Server Requirements}
 \begin{enumerate}
+  \item Receive a request
   \item Insert a request in a queue depending on the user rating.
+  \item Request confirmation from users nearby the emergency.
   \item Log the requests.
   \item Send the expected response time.
   \item Send the confirmation that an ambulance is on route.
   \item Rate the user accordingly at the end of the request.
+
   \item Temporarily block a user for abusive usage.
 \end{enumerate}
 
@@ -100,6 +104,7 @@ The main goal of this sprint is to build the foundation and the architecture to 
 There are no keys or certificates involved in this step so non-repudiation will not be our goal here.
 
 We will have a centralized Dispatch Central that will receive all the requests from the Users.
+Each request has the user phone number in order to identify him.
 
 Auditing mechanisms will be considered in this phase and for that we will use logs on the Central side.
 Everytime a request is received it is registered in a log for the auditing personal be able to review.
@@ -107,6 +112,8 @@ Each entry will have a timestamp and the contents of the message (ID, Location, 
 
 After processing the request, and approving it, the Dispatch sends the confirmation message that an ambulance is on the way.
 Otherwise the user will be accounted for the incorrect usage and warned of the possible consequences of further reckless behavior.
+
+After attending the emergency the team sent provides feedback regarding the truthfulness of the emergency.
 
 The user will be registered into a database with a ranking associated that will be used for the placement in queue.
 Incorrect usage will lead to a bad ranking and consequently worse response time when makind a real request.
@@ -131,9 +138,13 @@ redirecting connections to secure ports and analyzing packet contents.
 
 \section{Tool references}
 \begin{enumerate}
-  \item \textbf{[Well-Tested]} \href{https://www.java.com/}{Java}
-  \item \textbf{[Tested]} \href{https://www.docker.com}{Docker}
-  \item \textbf{[Tested]} \href{https://www.nginx.com}{nginx}
+  \item \textbf{[Well-Tested]} \href{https://trello.com/}{Trello} - Task assignement and management.
+  \item \textbf{[Well-Tested]} \href{https://www.mysql.com}{MySQL} - Database to save the users.
+  \item \textbf{[Well-Tested]} \href{https://docs.oracle.com/javase/7/docs/api/java/net/Socket.html}{java.net.Socket} - Establish a connection between the server and the application.
+  \item \textbf{[Well-Tested]} \href{http://dev.mysql.com/downloads/connector/j/}{mysql-connector-java} - Driver to use MySQL with Java
+  \item \textbf{[Tested]} \href{https://www.docker.com}{Docker} - Use of Docker's containers to simulate the multiple servers.
+  \item \textbf{[Tested]} \href{https://www.nginx.com}{nginx} - Used to create a load balance server.
+  \item \textbf{[Tested]} \href{https://letsencrypt.org}{Let's Encrypt} - Free and Automated Open Source CA.
 \end{enumerate}
 
 \section{Work Plan}
