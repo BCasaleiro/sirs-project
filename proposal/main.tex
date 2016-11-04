@@ -131,10 +131,11 @@ With the previous assumption we can guarantee that the user sending the message 
 The Dispatch Central will retrieve the user public key from the certificate that was requested after receiving the message and then deciphers it.
 The procedure is the same for the message flow from the Dispatch to the user.
 
+Also, in this phase we will build a network level firewall, with some basic rules to discard duplicate packets and redirect connections to secure ports (HTTPS).
+
 \subsection{Advanced solution}
 On this last phase of the project, we will focus on fault tolerance on the primary server (DoS, crash, etc.).
-We will also focus in building a firewall responsible for detecting bad or duplicate requests,
-redirecting connections to secure ports and analyzing packet contents.
+We will also focus in updating the firewall to an intrusion detection system (detect where the packets came from with metadata supplied from the body of the packet, like location). This IDS will receive the data from the sensors of the phone and analize its content to verify the veracity of the message.
 
 \section{Tool references}
 \begin{enumerate}
