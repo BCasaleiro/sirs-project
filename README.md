@@ -4,7 +4,7 @@ Grupo de SIRS 11 - Campus Alameda
 
 Miguel Pinto, 79060, miguelpinto25@hotmail.com  
 Bernardo Casaleiro, 87827, bernardocasaleiro@gmail.com  
-João Godinho, 87830, [Adicionem os vossos emails aqui]
+João Godinho, 87830, joaogodinho_4@hotmail.com  
 
 -------------------------------------------------------------------------------
 
