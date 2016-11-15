@@ -17,9 +17,6 @@ public class DispatchCentral extends Thread
 {
 	private ServerSocket serverSocket;
 	private Connection c = null;
-	//sudo -u postgres psql -c "ALTER USER postgres PASSWORD '123';"
-	//CREATE DATABASE emergenciesdb;
-
 
 	public DispatchCentral(int port) throws IOException {
 		serverSocket = new ServerSocket(port);
