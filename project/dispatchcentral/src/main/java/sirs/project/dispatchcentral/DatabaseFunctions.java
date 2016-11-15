@@ -63,9 +63,33 @@ public final class DatabaseFunctions{
 		}
 	}
 
+	public boolean userExists(Connection c, String command, String phoneNumber)
+	{
+		try
+		{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, phoneNumber);
+			c.setAutoCommit(false);
+			ResultSet result = ps.executeQuery();
+			c.commit();
+			
+			return (!resultEmpty(result));
+	
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
 	public void getUserRating(Connection c, String command, String phoneNumber)
 	{
 
 	}
 
+	public static boolean resultEmpty(ResultSet rs) throws SQLException {
+ 	   return (!rs.isBeforeFirst() && rs.getRow() == 0);
+	}
 }
