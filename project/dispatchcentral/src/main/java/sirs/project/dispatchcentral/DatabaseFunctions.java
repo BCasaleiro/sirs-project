@@ -79,9 +79,7 @@ public final class DatabaseFunctions{
 		{
 			PreparedStatement ps = c.prepareStatement(command);
 			ps.setString(1, phoneNumber);
-			c.setAutoCommit(false);
 			ResultSet result = ps.executeQuery();
-			c.commit();
 
 			return (!resultEmpty(result));
 	
@@ -94,9 +92,28 @@ public final class DatabaseFunctions{
 		return false;
 	}
 
-	public void getUserRating(Connection c, String command, String phoneNumber)
+	public int userRating(Connection c, String command, String phoneNumber)
 	{
+		if(!userExists(c, dbConstants.listPhoneNumbers, phoneNumber))
+		{
+			System.out.println("User doesn't exist");
+			return -1;
+		}
 
+		try
+		{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, phoneNumber);
+
+			ResultSet result = ps.executeQuery();
+			result.next();
+			return result.getInt("RATING");
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	public static boolean resultEmpty(ResultSet rs) throws SQLException {

@@ -53,6 +53,7 @@ public class DispatchCentral extends Thread
 		dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
 		dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
 		System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
+		System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
 	}
 
 	public int connectToDatabase()
