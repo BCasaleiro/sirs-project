@@ -26,7 +26,6 @@ public final class DatabaseFunctions{
 
 	public void insertUser(Connection c, String command, String phoneNumber)
 	{
-		System.out.println("Inserting new user");
 		try
 		{
 			PreparedStatement ps = c.prepareStatement(command);
@@ -46,7 +45,7 @@ public final class DatabaseFunctions{
 	{
 
 	}
-	
+
 	public void updateRating(Connection c, String command, int value)
 	{
 
