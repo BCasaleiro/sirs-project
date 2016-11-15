@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.*;
+
 
 /**
  * Hello world!
@@ -17,13 +19,33 @@ public class DispatchCentral extends Thread
 {
 	private ServerSocket serverSocket;
 	private Connection c = null;
+	private DatabaseConstants dbConstants = null;
+	private DatabaseFunctions dbFunctions = null;
+
 
 	public DispatchCentral(int port) throws IOException {
 		serverSocket = new ServerSocket(port);
-		connectToDatabase();
+		dbConstants = new DatabaseConstants();
+		if(connectToDatabase()==1)
+		{
+			dbFunctions = new DatabaseFunctions(c);
+			createNecessaryTables();
+			System.out.println("Created necessary tables");
+		}
+		else
+		{
+			System.out.println("Error Connecting to Database");
+			return;
+		}
 	}
 
-	public void connectToDatabase()
+	public void createNecessaryTables()
+	{
+		dbFunctions.createTable(dbConstants.requestsTableCreation);
+		dbFunctions.createTable(dbConstants.ratingsTableCreation);
+	}
+
+	public int connectToDatabase()
 	{
 		try {
         	Class.forName("org.postgresql.Driver");
@@ -35,6 +57,7 @@ public class DispatchCentral extends Thread
         System.exit(0);
       }
       System.out.println("Opened database successfully");
+      return 1;
 	}
 	
 	public void run() {
