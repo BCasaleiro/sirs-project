@@ -23,20 +23,22 @@ public class DispatchCentral extends Thread
 
 	public DispatchCentral(int port) throws IOException {
 		serverSocket = new ServerSocket(port);
+		connectToDatabase();
+	}
 
+	public void connectToDatabase()
+	{
 		try {
-		         Class.forName("org.postgresql.Driver");
-		         c = DriverManager
-		            .getConnection("jdbc:postgresql://localhost:5432/emergenciesdb",
-		            "postgres", "123");
-		      } catch (Exception e) {
-		         e.printStackTrace();
-		         System.err.println(e.getClass().getName()+": "+e.getMessage());
-		         System.exit(0);
-		      }
-		      System.out.println("Opened database successfully");
-		  }
-	
+        	Class.forName("org.postgresql.Driver");
+         	c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/emergenciesdb",
+            "postgres", "123");
+      	}catch (Exception e) {
+        e.printStackTrace();
+        System.err.println(e.getClass().getName()+": "+e.getMessage());
+        System.exit(0);
+      }
+      System.out.println("Opened database successfully");
+	}
 	
 	public void run() {
 		while(true) {
