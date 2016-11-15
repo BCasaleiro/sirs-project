@@ -4,9 +4,13 @@ import java.sql.Connection;
 import java.sql.*;
 
 public final class DatabaseFunctions{
-
-	public DatabaseFunctions(){}
 	//TODO add ROLLBACK instead of print when catches an exception 
+	
+	DatabaseConstants dbConstants = null;
+
+	public DatabaseFunctions(DatabaseConstants constants){
+		dbConstants = constants;
+	}
 	public void execCmd(Connection c, String command)
 	{
 		try
@@ -26,6 +30,12 @@ public final class DatabaseFunctions{
 
 	public void insertUser(Connection c, String command, String phoneNumber)
 	{
+		if(userExists(c, dbConstants.listPhoneNumbers, phoneNumber))
+		{
+			System.out.println("User Already Registered");
+			return;
+		}
+
 		try
 		{
 			PreparedStatement ps = c.prepareStatement(command);
@@ -72,7 +82,7 @@ public final class DatabaseFunctions{
 			c.setAutoCommit(false);
 			ResultSet result = ps.executeQuery();
 			c.commit();
-			
+
 			return (!resultEmpty(result));
 	
 		}
