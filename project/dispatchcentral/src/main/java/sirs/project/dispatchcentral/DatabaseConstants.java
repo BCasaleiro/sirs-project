@@ -8,9 +8,10 @@ public final class DatabaseConstants{
 			"CREATE TABLE IF NOT EXISTS REQUESTS "+
             "(ID 			SERIAL	PRIMARY KEY	, "+
             "PHONENUMBER   	TEXT				NOT NULL, "+
-            "LOCALIZATION 	TEXT				NOT NULL, "+
+            "LOCALIZATION 	TEXT				NULL, "+
             "MESSAGE		TEXT				NOT NULL, "+
-            "TIMESTAMP		DATE 				NOT NULL);";
+            "TIMESTAMP      DATE                NOT NULL, "+
+            "DISPATCHED     TEXT                NOT NULL);";
 
     String ratingsTableCreation = 
     		"CREATE TABLE IF NOT EXISTS RATINGS " +
@@ -24,4 +25,6 @@ public final class DatabaseConstants{
     String listPhoneNumbers = "SELECT PHONENUMBER FROM RATINGS WHERE PHONENUMBER=?;";
     
     String userRating = "SELECT RATING FROM RATINGS WHERE PHONENUMBER=?;";
+
+    String insertRequest = "INSERT INTO REQUESTS (PHONENUMBER, MESSAGE, TIMESTAMP, DISPATCHED) VALUES (?,?,?,false);";
 }   
