@@ -28,13 +28,17 @@ public class DispatchCentral extends Thread
 	            System.out.println("[DEBUG] Connected to " + server.getRemoteSocketAddress());
 	            DataInputStream in = new DataInputStream(server.getInputStream());
 	            
-	            switch(in.readUTF()){
+	            String received = in.readUTF();
+	            
+	            switch(received){
 		            case "ping":
 		            	System.out.println("[DEBUG] Client sent ping. Answered with 'pong'");
 		            	DataOutputStream out = new DataOutputStream(server.getOutputStream());
 			            out.writeUTF("pong");
 			            server.close();
 			            break;
+			        default:
+			        	System.out.println(received);
 	            }	            
 	            
 	         }catch(SocketTimeoutException s) {
