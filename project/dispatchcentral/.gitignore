@@ -1,5 +1,6 @@
 /target/
 
+
 *.class
 
 # Mobile Tools for Java (J2ME)
@@ -16,4 +17,4 @@ hs_err_pid*
 .classpath
 .settings
 .project
-.*.swp
+.*.swp 
