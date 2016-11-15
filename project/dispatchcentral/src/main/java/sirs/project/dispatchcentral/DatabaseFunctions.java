@@ -4,13 +4,10 @@ import java.sql.Connection;
 import java.sql.*;
 
 public final class DatabaseFunctions{
-	Connection c = null;
 
-	public DatabaseFunctions(Connection c){
-		this.c = c;
-	}
+	public DatabaseFunctions(){}
 
-	public void execCmd(String command)
+	public void execCmd(Connection c, String command)
 	{
 		try
 		{
@@ -26,22 +23,36 @@ public final class DatabaseFunctions{
 		}
 	}
 
-	public void insertRequest(String command, )
+
+	public void insertUser(Connection c, String command, String phoneNumber)
+	{
+		System.out.println("Inserting new user");
+		try
+		{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, phoneNumber);
+			c.setAutoCommit(false);
+			ps.execute();
+			c.commit();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+
+	}
+
+	public void insertRequest(Connection c, String command)
+	{
+
+	}
+	
+	public void updateRating(Connection c, String command, int value)
 	{
 
 	}
 
-	public void insertNewUser(String command, String phoneNumber)
-	{
-		
-	}
-
-	public void updateRating(String command, int value)
-	{
-
-	}
-
-	public void getUserRating(String command, String phoneNumber)
+	public void getUserRating(Connection c, String command, String phoneNumber)
 	{
 
 	}

@@ -28,7 +28,7 @@ public class DispatchCentral extends Thread
 		dbConstants = new DatabaseConstants();
 		if(connectToDatabase()==1)
 		{
-			dbFunctions = new DatabaseFunctions(c);
+			dbFunctions = new DatabaseFunctions();
 			createNecessaryTables();
 			System.out.println("Created necessary tables");
 		}
@@ -41,8 +41,9 @@ public class DispatchCentral extends Thread
 
 	public void createNecessaryTables()
 	{
-		dbFunctions.execCmd(dbConstants.requestsTableCreation);
-		dbFunctions.execCmd(dbConstants.ratingsTableCreation);
+		dbFunctions.execCmd(c, dbConstants.requestsTableCreation);
+		dbFunctions.execCmd(c, dbConstants.ratingsTableCreation);
+		dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
 	}
 
 	public int connectToDatabase()
