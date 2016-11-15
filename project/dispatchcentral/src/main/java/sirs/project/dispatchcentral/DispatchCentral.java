@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 /**
  * Hello world!
@@ -14,10 +16,27 @@ import java.net.SocketTimeoutException;
 public class DispatchCentral extends Thread
 {
 	private ServerSocket serverSocket;
-	   
+	private Connection c = null;
+	//sudo -u postgres psql -c "ALTER USER postgres PASSWORD '123';"
+	//CREATE DATABASE emergenciesdb;
+
+
 	public DispatchCentral(int port) throws IOException {
 		serverSocket = new ServerSocket(port);
-	}
+
+		try {
+		         Class.forName("org.postgresql.Driver");
+		         c = DriverManager
+		            .getConnection("jdbc:postgresql://localhost:5432/emergenciesdb",
+		            "postgres", "123");
+		      } catch (Exception e) {
+		         e.printStackTrace();
+		         System.err.println(e.getClass().getName()+": "+e.getMessage());
+		         System.exit(0);
+		      }
+		      System.out.println("Opened database successfully");
+		  }
+	
 	
 	public void run() {
 		while(true) {
