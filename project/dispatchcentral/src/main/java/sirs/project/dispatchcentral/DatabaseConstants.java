@@ -19,4 +19,5 @@ public final class DatabaseConstants{
 
     String insertUser = "INSERT INTO RATINGS (PHONENUMBER, RATING) VALUES (?,100);";
 
+    String updateRating = "UPDATE RATINGS SET RATING=RATING+? WHERE PHONENUMBER=?;";
 }

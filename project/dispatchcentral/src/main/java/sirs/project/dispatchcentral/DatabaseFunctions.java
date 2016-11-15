@@ -6,7 +6,7 @@ import java.sql.*;
 public final class DatabaseFunctions{
 
 	public DatabaseFunctions(){}
-
+	//TODO add ROLLBACK instead of print when catches an exception 
 	public void execCmd(Connection c, String command)
 	{
 		try
@@ -46,9 +46,21 @@ public final class DatabaseFunctions{
 
 	}
 
-	public void updateRating(Connection c, String command, int value)
+	public void updateRating(Connection c, String command, String phoneNumber, int value)
 	{
-
+		try
+		{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setInt(1, value);
+			ps.setString(2, phoneNumber);
+			c.setAutoCommit(false);
+			ps.execute();
+			c.commit();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void getUserRating(Connection c, String command, String phoneNumber)

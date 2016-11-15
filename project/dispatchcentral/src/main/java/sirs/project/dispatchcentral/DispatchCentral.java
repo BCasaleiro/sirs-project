@@ -43,11 +43,15 @@ public class DispatchCentral extends Thread
 	{
 		dbFunctions.execCmd(c, dbConstants.requestsTableCreation);
 		dbFunctions.execCmd(c, dbConstants.ratingsTableCreation);
+		
+		//Just for test
+		dbTestingFunction();
 	}
 
 	public void dbTestingFunction()
 	{
 		dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
+		dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
 	}
 
 	public int connectToDatabase()
