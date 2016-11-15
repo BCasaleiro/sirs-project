@@ -41,8 +41,8 @@ public class DispatchCentral extends Thread
 
 	public void createNecessaryTables()
 	{
-		dbFunctions.createTable(dbConstants.requestsTableCreation);
-		dbFunctions.createTable(dbConstants.ratingsTableCreation);
+		dbFunctions.execCmd(dbConstants.requestsTableCreation);
+		dbFunctions.execCmd(dbConstants.ratingsTableCreation);
 	}
 
 	public int connectToDatabase()

@@ -10,8 +10,7 @@ public final class DatabaseFunctions{
 		this.c = c;
 	}
 
-
-	public void createTable(String command)
+	public void execCmd(String command)
 	{
 		try
 		{
@@ -25,6 +24,26 @@ public final class DatabaseFunctions{
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public void insertRequest(String command, )
+	{
 
 	}
+
+	public void insertNewUser(String command, String phoneNumber)
+	{
+		
+	}
+
+	public void updateRating(String command, int value)
+	{
+
+	}
+
+	public void getUserRating(String command, String phoneNumber)
+	{
+
+	}
+
 }
