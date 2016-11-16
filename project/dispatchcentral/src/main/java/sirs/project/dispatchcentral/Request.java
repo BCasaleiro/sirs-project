@@ -1,3 +1,5 @@
+package sirs.project.dispatchcentral;
+
 import java.util.Date;
 
 public class Request {
@@ -7,13 +9,13 @@ public class Request {
     private boolean dispatched;
 
     public Request() {
-        this.date = Date();
+        this.date = new Date();
     }
 
     public Request(String userId, String message) {
         this.userId = userId;
         this.message = message;
-        this.date = Date();
+        this.date = new Date();
     }
 
     public String getUserId() {
