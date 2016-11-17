@@ -56,8 +56,43 @@ public final class DatabaseFunctions{
 		try{
 			PreparedStatement ps = c.prepareStatement(command);
 			ps.setString(1, request.getUserId());
-			ps.setString(2, request.getMessage());
-			ps.setTimestamp(3, new Timestamp(request.getDate().getTime()));
+			ps.setString(2, request.getLocalization());
+			ps.setString(3, request.getMessage());
+			ps.setTimestamp(4, new Timestamp(request.getDate().getTime()));
+			c.setAutoCommit(false);
+			ps.execute();
+			c.commit();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public int getRequestId(Connection c, String command, Request request)
+	{
+		try{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, request.getUserId());
+			ps.setString(2, request.getLocalization());
+			ps.setString(3, request.getMessage());
+			ps.setTimestamp(4, new Timestamp(request.getDate().getTime()));
+			
+			ResultSet result = ps.executeQuery();
+			result.next();
+			return result.getInt("ID");
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	public void setDispatched(Connection c, String command, int requestId)
+	{
+		try{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setInt(1, requestId);
 			c.setAutoCommit(false);
 			ps.execute();
 			c.commit();

@@ -52,6 +52,12 @@ public class DispatchCentral extends Thread
     dbTestingFunction();
   }
 
+  public void testRequestdbFunctions(Request request)
+  {
+  	dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+  	int id = dbFunctions.getRequestId(c, dbConstants.getRequestId, request);
+  	dbFunctions.setDispatched(c, dbConstants.setDispatched, id);
+  }
   public void dbTestingFunction() {
     dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
     dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
@@ -111,7 +117,8 @@ public class DispatchCentral extends Thread
           request = processRequest(inputStream);
           logRequest(request);
           //insert on db
-          dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+          testRequestdbFunctions(request);
+          
           out.writeUTF("Help is on the way!");
           server.close();
         }

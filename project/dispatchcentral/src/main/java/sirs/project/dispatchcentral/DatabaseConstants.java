@@ -26,5 +26,9 @@ public final class DatabaseConstants{
     
     String userRating = "SELECT RATING FROM RATINGS WHERE PHONENUMBER=?;";
 
-    String insertRequest = "INSERT INTO REQUESTS (PHONENUMBER, MESSAGE, TIMESTAMP, DISPATCHED) VALUES (?,?,?,false);";
+    String insertRequest = "INSERT INTO REQUESTS (PHONENUMBER, LOCALIZATION, MESSAGE, TIMESTAMP, DISPATCHED) VALUES (?,?,?,?,false);";
+
+    String setDispatched = "UPDATE REQUESTS SET DISPATCHED=true WHERE ID = ?;";
+
+    String getRequestId = "SELECT ID FROM REQUESTS WHERE PHONENUMBER=? AND LOCALIZATION=? AND MESSAGE=? AND TIMESTAMP=?;";
 }   
