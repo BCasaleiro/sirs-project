@@ -10,7 +10,7 @@ public final class DatabaseConstants{
             "PHONENUMBER   	TEXT				NOT NULL, "+
             "LOCALIZATION 	TEXT				NULL, "+
             "MESSAGE		TEXT				NOT NULL, "+
-            "TIMESTAMP      DATE                NOT NULL, "+
+            "TIMESTAMP      TIMESTAMP           NOT NULL, "+
             "DISPATCHED     TEXT                NOT NULL);";
 
     String ratingsTableCreation = 

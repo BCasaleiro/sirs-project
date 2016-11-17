@@ -57,8 +57,7 @@ public final class DatabaseFunctions{
 			PreparedStatement ps = c.prepareStatement(command);
 			ps.setString(1, request.getUserId());
 			ps.setString(2, request.getMessage());
-			java.sql.Date date = new java.sql.Date(request.getDate().getTime());
-			ps.setDate(3, date);
+			ps.setTimestamp(3, new Timestamp(request.getDate().getTime()));
 			c.setAutoCommit(false);
 			ps.execute();
 			c.commit();

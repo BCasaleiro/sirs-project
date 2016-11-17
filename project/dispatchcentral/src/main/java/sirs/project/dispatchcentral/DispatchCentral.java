@@ -57,7 +57,7 @@ public class DispatchCentral extends Thread
     dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
     System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
     System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
-
+    
   }
 
   public int connectToDatabase() {
@@ -110,6 +110,8 @@ public class DispatchCentral extends Thread
           System.out.println("[DEBUG] Client sent request.");
           request = processRequest(inputStream);
           logRequest(request);
+          //insert on db
+          dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
           out.writeUTF("Help is on the way!");
           server.close();
         }
