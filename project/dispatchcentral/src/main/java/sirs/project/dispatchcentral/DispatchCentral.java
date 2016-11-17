@@ -45,8 +45,8 @@ public class DispatchCentral extends Thread
   }
 
   public void createNecessaryTables() {
-    dbFunctions.execCmd(c, dbConstants.requestsTableCreation);
-    dbFunctions.execCmd(c, dbConstants.ratingsTableCreation);
+    dbFunctions.createTable(c, dbConstants.requestsTableCreation);
+    dbFunctions.createTable(c, dbConstants.ratingsTableCreation);
 
     //Just for test
     dbTestingFunction();

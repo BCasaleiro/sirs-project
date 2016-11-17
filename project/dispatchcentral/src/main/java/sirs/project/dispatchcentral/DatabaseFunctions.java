@@ -11,7 +11,7 @@ public final class DatabaseFunctions{
 	public DatabaseFunctions(DatabaseConstants constants){
 		dbConstants = constants;
 	}
-	public void execCmd(Connection c, String command)
+	public void createTable(Connection c, String command)
 	{
 		try
 		{
