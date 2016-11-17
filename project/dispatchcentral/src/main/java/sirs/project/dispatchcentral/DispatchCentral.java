@@ -14,6 +14,8 @@ import java.util.Date;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
 * Hello world!
@@ -21,6 +23,8 @@ import java.sql.*;
 */
 public class DispatchCentral extends Thread
 {
+  final Logger logger = LoggerFactory.getLogger(DispatchCentral.class);
+
   private ServerSocket serverSocket;
   private String inputStream;
   private Request request;
@@ -70,22 +74,7 @@ public class DispatchCentral extends Thread
   }
 
   private void logRequest(Request request) {
-    File file = new File("log.txt");
-
-    try {
-      if (!file.exists()) {
-        file.createNewFile();
-      }
-
-      FileWriter fw = new FileWriter(file.getAbsoluteFile());
-
-      BufferedWriter bw = new BufferedWriter(fw);
-      bw.write("[" + request.getDate() + "]\t" + request.getUserId() + "\t" + request.getMessage());
-
-      bw.close();
-    } catch (IOException e) {
-      System.out.println(e);
-    }
+    logger.info("[" + request.getDate() + "]\t" + request.getUserId() + "\t" + request.getMessage());
 
     System.out.println("[DEBUG] Logged request.");
   }
