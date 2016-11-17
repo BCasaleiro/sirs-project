@@ -57,6 +57,7 @@ public class DispatchCentral extends Thread
     dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
     System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
     System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
+
   }
 
   public int connectToDatabase() {
@@ -75,6 +76,7 @@ public class DispatchCentral extends Thread
 
   private void logRequest(Request request) {
     logger.info("[" + request.getDate() + "]\t" + request.getUserId() + "\t" + request.getMessage());
+
 
     System.out.println("[DEBUG] Logged request.");
   }
