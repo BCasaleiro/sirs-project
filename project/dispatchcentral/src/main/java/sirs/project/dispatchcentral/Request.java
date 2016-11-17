@@ -8,6 +8,9 @@ public class Request {
     private String message;
     private boolean dispatched;
 
+    //for database test
+    private String localization = "38.7369914,-9.1303272";
+
     public Request() {
         this.date = new Date();
     }
@@ -48,5 +51,13 @@ public class Request {
 
     public void setDispatched(boolean dispatched) {
         this.dispatched = dispatched;
+    }
+
+    public String getLocalization(){
+        return localization;
+    }
+
+    public void setLocalization(String localization){
+        this.localization=localization;
     }
 }
