@@ -77,7 +77,6 @@ public class DispatchCentral extends Thread
   private void logRequest(Request request) {
     logger.info("[" + request.getDate() + "]\t" + request.getUserId() + "\t" + request.getMessage());
 
-
     System.out.println("[DEBUG] Logged request.");
   }
 
