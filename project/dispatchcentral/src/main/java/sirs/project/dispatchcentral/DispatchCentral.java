@@ -53,6 +53,7 @@ public class DispatchCentral extends Thread
     dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
     System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
     System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
+  	
   }
 
   public int connectToDatabase() {
@@ -83,6 +84,7 @@ public class DispatchCentral extends Thread
       bw.write("[" + request.getDate() + "]\t" + request.getUserId() + "\t" + request.getMessage());
 
       bw.close();
+      dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
     } catch (IOException e) {
       System.out.println(e);
     }

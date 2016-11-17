@@ -51,15 +51,14 @@ public final class DatabaseFunctions{
 
 	}
 
-	//Not tested yet
-/*
 	public void insertRequest(Connection c, String command, Request request)
 	{
 		try{
 			PreparedStatement ps = c.prepareStatement(command);
 			ps.setString(1, request.getUserId());
 			ps.setString(2, request.getMessage());
-			ps.setDate(3, request.getDate());
+			java.sql.Date date = new java.sql.Date(request.getDate().getTime());
+			ps.setDate(3, date);
 			c.setAutoCommit(false);
 			ps.execute();
 			c.commit();
@@ -69,7 +68,7 @@ public final class DatabaseFunctions{
 			e.printStackTrace();
 		}
 	}
-*/
+
 	public void updateRating(Connection c, String command, String phoneNumber, int value)
 	{
 		try
