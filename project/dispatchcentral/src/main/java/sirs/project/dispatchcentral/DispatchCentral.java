@@ -17,6 +17,8 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class DispatchCentral{
 	
@@ -35,6 +37,8 @@ public class DispatchCentral{
     private DatabaseConstants dbConstants = null;
     private DatabaseFunctions dbFunctions = null;
     
+    private static PriorityQueue <Request> queue = null;
+
     /*
      * Main method
      */   
@@ -45,6 +49,9 @@ public class DispatchCentral{
         int port = Integer.parseInt(args[0]);
         server.checkConnectivity();
         server.runServer(port);
+
+        queue = new PriorityQueue<Request>(comparator);
+
     }
     
     /*
@@ -59,11 +66,10 @@ public class DispatchCentral{
     }
     
     public void dbTestingFunction() {
-        dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
-        dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
-        System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
-        System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
-        
+      dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
+      dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
+      System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
+      System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));  
     }
     
     public void checkConnectivity(){
@@ -129,6 +135,14 @@ public class DispatchCentral{
         System.exit(0);
     }
     
+    public static Comparator <Request> comparator = new Comparator <Request>(){
+      @Override
+      public int compare(Request a, Request b)
+      {
+        return(int)(a.getPriority() - b.getPriority());
+      }
+    };
+
     /*
      * Nested class to process the requests
      */
@@ -145,6 +159,10 @@ public class DispatchCentral{
             Request r = new Request();
             r.setUserId(strTok.nextToken());
             r.setMessage(strTok.nextToken());
+
+            int rating = dbFunctions.userRating(c, dbConstants.userRating, r.getUserId());
+            System.out.println("Rating: "+ rating);
+            r.setPriority(rating);
 
             return r;
         }

@@ -7,6 +7,7 @@ public class Request {
     private Date date;
     private String message;
     private boolean dispatched;
+    private int priority;
 
     //for database test
     private String localization = "38.7369914,-9.1303272";
@@ -59,5 +60,13 @@ public class Request {
 
     public void setLocalization(String localization){
         this.localization=localization;
+    }
+
+    public int getPriority(){
+        return priority;
+    }
+
+    public void setPriority(int priority){
+        this.priority = priority;
     }
 }
