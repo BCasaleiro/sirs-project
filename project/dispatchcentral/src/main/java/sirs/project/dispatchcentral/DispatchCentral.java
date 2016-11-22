@@ -157,8 +157,12 @@ public class DispatchCentral{
           if(!queue.isEmpty())
           {
             //System.out.println(queue.toString());
-            Request request = queue.poll();
-            serveRequest(request);
+            synchronized(queue)
+            {
+              Request request = queue.poll();
+              serveRequest(request);  
+            }
+            
           }
           try{
 
@@ -220,9 +224,12 @@ public class DispatchCentral{
         			//insert on db
 	            //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
          System.out.println("Request added to queue");
-         queue.add(request);
-         System.out.println(queue.size());
-
+         
+         synchronized(queue)
+         {
+          queue.add(request);
+          System.out.println(queue.size());
+        }
        }
      }catch(IOException e){
       log.error(e.getMessage());
