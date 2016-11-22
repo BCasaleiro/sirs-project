@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -21,28 +22,26 @@ public class Client
 	private String phoneNumber = null;
 	
 	public Client(String serverName, int port) throws UnknownHostException, IOException{
-		client = new Socket(serverName, port);
-		inFromServer = client.getInputStream();
-		in = new DataInputStream(inFromServer);
-		outServer = client.getOutputStream();
-		out = new DataOutputStream(outServer);
+		client = new Socket(serverName, port);		
 	}
 	
 	private void exitConnection() throws IOException{
 		client.close();
 	}
 	
-	private void ping() throws IOException{
-		out.writeUTF("ping");    
-        System.out.println(in.readUTF() + "\n");
-	}
-
 	public void setPhoneNumber(String number){
 		phoneNumber = number;
 	}
 	
 	private void sendRequest() throws IOException{
-		out.writeUTF(phoneNumber + ",HELP!");
+		 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+		 out.println("Request: " + phoneNumber + ",HELP!");
+		 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			 
+		 String fromServer = in.readLine();
+		 if(fromServer != null){
+			 System.out.println(fromServer);
+		 }
 	}
 	
 	private void clearScreen(){
@@ -72,27 +71,20 @@ public class Client
         	System.out.println("[DEBUG] Connecting to " + serverName + " on port " + port);      	
         	System.out.println("[DEBUG] Successfully connected to server");
         	
-        	String switchCase = null;
-
-        	do{
-            	System.out.println("Choose one option from the following");
-            	System.out.println("-----------------------------------");
-            	System.out.println("1) Ping server [DEBUG]");
-            	System.out.println("2) Send Request");
-            	System.out.println("3) Exit");
-            	
-            	
-            	switchCase = br.readLine();
-            	
-            	switch(switchCase){
-    	        	case "1":
-    	        		clientClass.ping();
-    	        		break;
-    	        	case "2":
-    	        		clientClass.sendRequest();
-    	        		break;
-            	}            	
-        	} while(!switchCase.equals("3"));
+        	System.out.println("Choose one option from the following");
+        	System.out.println("-----------------------------------");
+        	System.out.println("1) Send Request");
+        	System.out.println("2) Exit");        	
+        	
+        	String switchCase = br.readLine();
+        	
+        	switch(switchCase){
+	        	case "1":
+	        		clientClass.sendRequest();
+	        		break;
+	        	default:
+	        		break;
+        	}            	
         		
             clientClass.exitConnection();
         }catch(IOException e){
