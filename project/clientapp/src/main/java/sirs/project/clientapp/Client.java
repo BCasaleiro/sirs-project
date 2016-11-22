@@ -35,7 +35,7 @@ public class Client
 	
 	private void sendRequest() throws IOException{
 		 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-		 out.println("Request: " + phoneNumber + ",HELP!");
+		 out.println(phoneNumber + ",HELP!");
 		 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			 
 		 String fromServer = in.readLine();
