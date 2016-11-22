@@ -30,14 +30,14 @@ public class DispatchCentral{
 	final Logger log = LoggerFactory.getLogger(DispatchCentral.class);
 	
 	private static DispatchCentral server; 
-    private ServerSocket serverSocket;
-    private ExecutorService executorService = Executors.newFixedThreadPool(10);
-    
-    private Connection c = null;
-    private DatabaseConstants dbConstants = null;
-    private DatabaseFunctions dbFunctions = null;
-    
-    private static PriorityQueue <Request> queue = null;
+  private ServerSocket serverSocket;
+  private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+  private Connection c = null;
+  private DatabaseConstants dbConstants = null;
+  private DatabaseFunctions dbFunctions = null;
+
+  private static PriorityQueue <Request> queue = null;
 
     /*
      * Main method
@@ -45,21 +45,27 @@ public class DispatchCentral{
     public static void main(String[] args) throws IOException {
     	
     	PropertyConfigurator.configure(PROJ_DIR + "/log4j.properties");
-        server = new DispatchCentral();
-        int port = Integer.parseInt(args[0]);
-        server.checkConnectivity();
-        server.runServer(port);
-
-        queue = new PriorityQueue<Request>(comparator);
+      server = new DispatchCentral();
+      int port = Integer.parseInt(args[0]);
+      queue = new PriorityQueue<Request>(comparator);
+      server.checkConnectivity();
+      server.runServer(port);
 
     }
-    
+    public static Comparator <Request> comparator = new Comparator <Request>(){
+      @Override
+      public int compare(Request a, Request b)
+      {
+        return(int)(a.getPriority() - b.getPriority());
+      }
+    };
+
     /*
      * Database functions
      */
     public void createNecessaryTables() {
-        dbFunctions.createTable(c, dbConstants.requestsTableCreation);
-        dbFunctions.createTable(c, dbConstants.ratingsTableCreation);
+      dbFunctions.createTable(c, dbConstants.requestsTableCreation);
+      dbFunctions.createTable(c, dbConstants.ratingsTableCreation);
 
         //Just for test
         //dbTestingFunction();
@@ -75,125 +81,153 @@ public class DispatchCentral{
     public void checkConnectivity(){
     	dbConstants = new DatabaseConstants();
     	if( connectToDatabase() == 1 ) {
-	      dbFunctions = new DatabaseFunctions(dbConstants);
-	      createNecessaryTables();
-	      System.out.println("Created necessary tables");
-	    } else {
-	      System.out.println("Error Connecting to Database");
-	    }
+       dbFunctions = new DatabaseFunctions(dbConstants);
+       createNecessaryTables();
+       System.out.println("Created necessary tables");
+     } else {
+       System.out.println("Error Connecting to Database");
+     }
+   }
+
+   public int connectToDatabase() {
+    try {
+      Class.forName("org.postgresql.Driver");
+      c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/emergenciesdb",
+        "postgres", "123");
+    }catch (Exception e) {
+      e.printStackTrace();
+      System.err.println(e.getClass().getName()+": "+e.getMessage());
+      System.exit(0);
     }
-    
-    public int connectToDatabase() {
-        try {
-          Class.forName("org.postgresql.Driver");
-          c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/emergenciesdb",
-          "postgres", "123");
-        }catch (Exception e) {
-          e.printStackTrace();
-          System.err.println(e.getClass().getName()+": "+e.getMessage());
-          System.exit(0);
-        }
-        System.out.println("Opened database successfully");
-        return 1;
-      }
-    
+    System.out.println("Opened database successfully");
+    return 1;
+  }
+
     /*
      * Function that will wait for incoming connections
      */
     private void runServer(int serverPort) {        
-        try {
-            log.info("Starting Server in port " + serverPort);
-            serverSocket = new ServerSocket(serverPort); 
+      try {
+        log.info("Starting Server in port " + serverPort);
+        serverSocket = new ServerSocket(serverPort);
 
-            while(true) {
-                try {
-                    Socket s = serverSocket.accept();
-                    log.info("Connection accepted from " + s.getInetAddress().getHostAddress());
-                    executorService.submit(new ServiceRequest(s));
-                } catch(IOException ioe) {
-                    log.error("Error accepting connection");
-                    log.error(ioe.getMessage());
-                }
-            }
-        }catch(IOException e) {
-            log.error("Error starting Server on port " + serverPort);
-            log.error(e.getMessage());
+        executorService.submit(new QueueRemover()); 
+        while(true) {
+          try {
+            Socket s = serverSocket.accept();
+            log.info("Connection accepted from " + s.getInetAddress().getHostAddress());
+            executorService.submit(new ServiceRequest(s));
+
+          } catch(IOException ioe) {
+            log.error("Error accepting connection");
+            log.error(ioe.getMessage());
+          }
         }
+      }catch(IOException e) {
+        log.error("Error starting Server on port " + serverPort);
+        log.error(e.getMessage());
+      }   
     }
 
     /*
      * Function to be called to shutdown the server
      */
     private void stopServer() {
-        executorService.shutdownNow();
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            log.error("Error while closing the server");
-            log.error(e.getMessage());
-        }
-        System.exit(0);
+      executorService.shutdownNow();
+      try {
+        serverSocket.close();
+      } catch (IOException e) {
+        log.error("Error while closing the server");
+        log.error(e.getMessage());
+      }
+      System.exit(0);
     }
     
-    public static Comparator <Request> comparator = new Comparator <Request>(){
-      @Override
-      public int compare(Request a, Request b)
-      {
-        return(int)(a.getPriority() - b.getPriority());
-      }
-    };
 
+    class QueueRemover implements Runnable{
+      public QueueRemover(){}
+
+      public void run()
+      {
+        System.out.println("Hi");
+        while(true)
+        {
+          //System.out.println("queue.size:" + queue.size());
+
+          if(!queue.isEmpty())
+          {
+            //System.out.println(queue.toString());
+            Request request = queue.poll();
+            serveRequest(request);
+          }
+          try{
+
+            Thread.sleep(1000);
+          }catch(InterruptedException e)
+          {
+            e.printStackTrace();
+          }
+        }
+      }
+      public void serveRequest(Request request)
+      {
+        System.out.println(request.getMessage());
+        System.out.println("Help is on the way");
+      }
+    }
     /*
      * Nested class to process the requests
      */
     class ServiceRequest implements Runnable {
 
-        private Socket socket;
+      private Socket socket;
 
-        public ServiceRequest(Socket connection) {
-            this.socket = connection;
-        }
+      public ServiceRequest(Socket connection) {
+        this.socket = connection;
+      }
 
-        private Request processRequest(String request) {
-            StringTokenizer strTok = new StringTokenizer(request, ",");
-            Request r = new Request();
-            r.setUserId(strTok.nextToken());
-            r.setMessage(strTok.nextToken());
+      private Request processRequest(String request) {
+        StringTokenizer strTok = new StringTokenizer(request, ",");
+        Request r = new Request();
+        r.setUserId(strTok.nextToken());
+        r.setMessage(strTok.nextToken());
 
-            int rating = dbFunctions.userRating(c, dbConstants.userRating, r.getUserId());
-            System.out.println("Rating: "+ rating);
-            r.setPriority(rating);
+            //int rating = dbFunctions.userRating(c, dbConstants.userRating, r.getUserId());
+        int rating = 1000;
+        System.out.println("Rating: "+ rating);
+        r.setPriority(rating);
 
-            return r;
-        }
-        
-        public void testRequestdbFunctions(Request request) {
-        	dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
-        	int id = dbFunctions.getRequestId(c, dbConstants.getRequestId, request);
-        	dbFunctions.setDispatched(c, dbConstants.setDispatched, id);
-        }
+        return r;
+      }
 
-        public void run(){
-        	
-        	log.info("Started processing the request");
-        	try(
-        		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        	){
-        		String message = null;
-        		if((message = in.readLine()) != null){
-        			Request request = processRequest(message);
-	    	        log.info(request.getUserId() + ", " + request.getMessage());
+      public void testRequestdbFunctions(Request request) {
+       dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+       int id = dbFunctions.getRequestId(c, dbConstants.getRequestId, request);
+       dbFunctions.setDispatched(c, dbConstants.setDispatched, id);
+     }
+
+     public void run(){
+
+       log.info("Started processing the request");
+       try(
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        ){
+        String message = null;
+        if((message = in.readLine()) != null){
+         Request request = processRequest(message);
+         log.info(request.getUserId() + ", " + request.getMessage());
         			//insert on db
-	            	dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+	            //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+         System.out.println("Request added to queue");
+         queue.add(request);
+         System.out.println(queue.size());
 
-        			System.out.println(message);
-        			out.println("Help is on the way");
-        		}
-        	}catch(IOException e){
-        		log.error(e.getMessage());
-        	}
-        }        
+       }
+     }catch(IOException e){
+      log.error(e.getMessage());
     }
-	
+  }        
+}
+
 }
