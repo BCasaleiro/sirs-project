@@ -135,9 +135,6 @@ public class DispatchCentral{
     class ServiceRequest implements Runnable {
 
         private Socket socket;
-        private Connection c = null;
-        private DatabaseConstants dbConstants = null;
-        private DatabaseFunctions dbFunctions = null;
 
         public ServiceRequest(Socket connection) {
             this.socket = connection;
@@ -171,7 +168,7 @@ public class DispatchCentral{
 	    	        log.info(request.getUserId() + ", " + request.getMessage());
         			//insert on db
 	    	        //testRequestdbFunctions(request);
-	            	//dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+	            	dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
 
         			System.out.println(message);
         			out.println("Help is on the way");
