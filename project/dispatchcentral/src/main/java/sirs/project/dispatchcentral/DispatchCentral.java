@@ -152,10 +152,11 @@ public class DispatchCentral {
                         System.out.println("HERE");
                         RequestObject requestObject = queue.poll();
                         serveRequest(requestObject);
+                        queue.notify();
                     }
                 }
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
 
                 }
@@ -204,7 +205,8 @@ public class DispatchCentral {
 
             log.info("Started processing the request");
             try (
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true); BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true); 
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             ) {
                 String message = null;
                 if ((message = in .readLine()) != null) {
@@ -217,12 +219,13 @@ public class DispatchCentral {
                     synchronized(queue) {
                         queue.add(new RequestObject(request, out, in ));
                         System.out.println(queue.size());
-                    }
-                    try {
-
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        try{
+                          queue.wait();
+                          
+                        }catch(InterruptedException e)
+                        {
+                          e.printStackTrace();
+                        }
                     }
                 }
             } catch (IOException e) {
