@@ -152,11 +152,12 @@ public class DispatchCentral {
                         System.out.println("HERE");
                         RequestObject requestObject = queue.poll();
                         serveRequest(requestObject);
+                        //updatePriorities(1);
                         queue.notify();
                     }
                 }
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
 
                 }
@@ -167,7 +168,30 @@ public class DispatchCentral {
             BufferedReader in = requestObject.getIn();
             PrintWriter out = requestObject.getOut();
             out.println("Help is on the way");
-            System.out.println("Removed "+ request.getUserId());
+            System.out.println("Removed "+ request.getUserId()+"Priority: "+request.getPriority());
+        }
+
+        //Needs testing
+        public void updatePriorities(int value)
+        {
+            if(queue.size()==0)
+            {
+              return;
+            }
+            else
+            {
+              
+              RequestObject firstRequest = queue.poll();
+              firstRequest.getRequest().updatePriority(value);
+              queue.add(firstRequest);
+
+              RequestObject request = null;
+              while((request = queue.poll())!=firstRequest)
+              {
+                  request.getRequest().updatePriority(value);
+                  queue.add(request);
+              }
+            }  
         }
     }
     /*

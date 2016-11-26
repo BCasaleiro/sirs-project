@@ -22,6 +22,11 @@ public class Request {
         this.date = new Date();
     }
 
+    public void updatePriority(int value)
+    {
+        this.priority+=value;
+    }
+
     public String getUserId() {
         return userId;
     }
