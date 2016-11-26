@@ -167,7 +167,7 @@ public class DispatchCentral {
             BufferedReader in = requestObject.getIn();
             PrintWriter out = requestObject.getOut();
             out.println("Help is on the way");
-            System.out.println("after sending");
+            System.out.println("Removed "+ request.getUserId());
         }
     }
     /*
