@@ -218,10 +218,9 @@ public class DispatchCentral {
 
                     synchronized(queue) {
                         queue.add(new RequestObject(request, out, in ));
-                        System.out.println(queue.size());
+                        System.out.println("Queue size: " + queue.size());
                         try{
                           queue.wait();
-                          
                         }catch(InterruptedException e)
                         {
                           e.printStackTrace();
