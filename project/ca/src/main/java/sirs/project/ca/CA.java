@@ -6,9 +6,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -37,13 +40,13 @@ public class CA {
     private void runServer(int serverPort) {        
         try {
             log.info("Starting Server in port " + serverPort);
-            serverSocket = new ServerSocket(serverPort); 
-
+            SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
             while(true) {
                 try {
-                    Socket s = serverSocket.accept();
-                    log.info("Connection accepted from " + s.getInetAddress().getHostAddress());
-                    executorService.submit(new ServiceRequest(s));
+        			SSLSocket sslsocket = (SSLSocket) sslServerSocket.accept();
+                    log.info("Secured connection accepted from " + sslsocket.getInetAddress().getHostAddress());
+                    executorService.submit(new ServiceRequest(sslsocket));
                 } catch(IOException ioe) {
                     log.error("Error accepting connection");
                     log.error(ioe.getMessage());
@@ -93,7 +96,8 @@ public class CA {
         	){
         		String message = null;
         		if((message = in.readLine()) != null){
-
+        			System.out.println(message);
+        			out.println("Mensagem recebida!!!!");
         		}
         	}catch(IOException e){
         		log.error(e.getMessage());
