@@ -55,6 +55,7 @@
 		          <arguments>
 		            <argument>localhost</argument>
 		            <argument>9999</argument>
+		            <argument>9998</argument>
 		          </arguments>
 		        </configuration>
   			</plugin>
