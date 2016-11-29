@@ -1,17 +1,29 @@
 package sirs.project.clientapp;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 public class Client 
 {
-	
+	private final static String PROJ_DIR = System.getProperty("user.dir");
+	private final static String KEYSTORE_PATH = PROJ_DIR + "/src/main/resources/clientappkeystore.jks";
+	private final static char[] PASS = "changeit".toCharArray();
+    private final static String ALIAS = "clientapp";
 	private SSLSocket ssldispatchsocket = null;
 	private SSLSocket sslcasocket = null;
 	private String phoneNumber = null;
@@ -53,16 +65,40 @@ public class Client
         System.out.flush();
 	}
 	
+	private byte[] getCertificate(){
+		FileInputStream fIn = null;
+		try {
+			fIn = new FileInputStream(KEYSTORE_PATH);
+			KeyStore keystore = KeyStore.getInstance("JKS");
+		    keystore.load(fIn, PASS);
+		    return keystore.getCertificate(ALIAS).getEncoded();
+		} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
+			e.printStackTrace();
+			return null;
+		}    		
+	}
+	
 	private void contactCA(){
         try {
 			PrintWriter out = new PrintWriter(sslcasocket.getOutputStream(), true);
     		BufferedReader in = new BufferedReader(new InputStreamReader(sslcasocket.getInputStream()));
-    		out.println("Primeiro contacto");
-    		String message = null;
+    		//Send certificate
+    		byte[] cert = getCertificate();
+			if(cert != null){
+				ObjectOutputStream toServer = new ObjectOutputStream(sslcasocket.getOutputStream());
+				ObjectInputStream fromServer = new ObjectInputStream(sslcasocket.getInputStream());
+				toServer.writeObject("Sending Certificate");
+				if(fromServer.readObject().equals("Proceed")){
+					toServer.writeObject(cert);
+				}
+			}    		
+			String message = null;
     		if((message = in.readLine()) != null){
+  			
+    			//Here we can ask for the certificate for dispatch central
     			System.out.println(message);
     		}
-		} catch (IOException e) {
+		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}		
 	}
