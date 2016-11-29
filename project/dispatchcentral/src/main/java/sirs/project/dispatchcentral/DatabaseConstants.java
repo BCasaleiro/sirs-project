@@ -23,6 +23,8 @@ public final class DatabaseConstants{
     String updateRating = "UPDATE RATINGS SET RATING=RATING+? WHERE PHONENUMBER=?;";
 
     String listPhoneNumbers = "SELECT PHONENUMBER FROM RATINGS WHERE PHONENUMBER=?;";
+
+    String requestExists = "SELECT ID FROM REQUESTS WHERE ID=?";
     
     String userRating = "SELECT RATING FROM RATINGS WHERE PHONENUMBER=?;";
 
