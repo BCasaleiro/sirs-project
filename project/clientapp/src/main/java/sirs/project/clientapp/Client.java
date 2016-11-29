@@ -60,7 +60,6 @@ public class Client
 	private void sendRequest() throws IOException{
 		 PrintWriter out = new PrintWriter(ssldispatchsocket.getOutputStream(), true);
 		 String id = hashText(phoneNumber + (new Date()).getTime());
-		 System.out.println(id);
 		 out.println( id + "," +  phoneNumber + ",HELP!");
 		 BufferedReader in = new BufferedReader(new InputStreamReader(ssldispatchsocket.getInputStream()));
 
