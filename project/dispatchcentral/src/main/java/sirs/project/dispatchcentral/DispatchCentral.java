@@ -23,34 +23,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DispatchCentral{
-	
+
 	/*
 	 * Variables
 	 */
-	
+
 	final static String PROJ_DIR = System.getProperty("user.dir");
 	final Logger log = LoggerFactory.getLogger(DispatchCentral.class);
-	
-	private static DispatchCentral server; 
+
+	private static DispatchCentral server;
     private ServerSocket serverSocket;
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
-    
+
     private Connection c = null;
     private DatabaseConstants dbConstants = null;
     private DatabaseFunctions dbFunctions = null;
-    
+
     /*
      * Main method
-     */   
+     */
     public static void main(String[] args) throws IOException {
-    	
+
     	PropertyConfigurator.configure(PROJ_DIR + "/log4j.properties");
         server = new DispatchCentral();
         int port = Integer.parseInt(args[0]);
         server.checkConnectivity();
         server.runServer(port);
     }
-    
+
     /*
      * Database functions
      */
@@ -61,15 +61,15 @@ public class DispatchCentral{
         //Just for test
         //dbTestingFunction();
     }
-    
+
     public void dbTestingFunction() {
         dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
         dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
         System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
         System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
-        
+
     }
-    
+
     public void checkConnectivity(){
     	dbConstants = new DatabaseConstants();
     	if( connectToDatabase() == 1 ) {
@@ -80,7 +80,7 @@ public class DispatchCentral{
 	      System.out.println("Error Connecting to Database");
 	    }
     }
-    
+
     public int connectToDatabase() {
         try {
           Class.forName("org.postgresql.Driver");
@@ -94,11 +94,11 @@ public class DispatchCentral{
         System.out.println("Opened database successfully");
         return 1;
       }
-    
+
     /*
      * Function that will wait for incoming connections
      */
-    private void runServer(int serverPort) {        
+    private void runServer(int serverPort) {
         try {
             log.info("Starting Server in port " + serverPort);
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
@@ -133,7 +133,7 @@ public class DispatchCentral{
         }
         System.exit(0);
     }
-    
+
     /*
      * Nested class to process the requests
      */
@@ -148,12 +148,13 @@ public class DispatchCentral{
         private Request processRequest(String request) {
             StringTokenizer strTok = new StringTokenizer(request, ",");
             Request r = new Request();
+			r.setId(strTok.nextToken());
             r.setUserId(strTok.nextToken());
             r.setMessage(strTok.nextToken());
 
             return r;
         }
-        
+
         public void testRequestdbFunctions(Request request) {
         	dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
         	int id = dbFunctions.getRequestId(c, dbConstants.getRequestId, request);
@@ -161,7 +162,7 @@ public class DispatchCentral{
         }
 
         public void run(){
-        	
+
         	log.info("Started processing the request");
         	try(
         		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -180,7 +181,7 @@ public class DispatchCentral{
         	}catch(IOException e){
         		log.error(e.getMessage());
         	}
-        }        
+        }
     }
-	
+
 }

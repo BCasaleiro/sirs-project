@@ -3,6 +3,8 @@ package sirs.project.dispatchcentral;
 import java.util.Date;
 
 public class Request {
+
+    private String id;
     private String userId;
     private Date date;
     private String message;
@@ -19,6 +21,14 @@ public class Request {
         this.userId = userId;
         this.message = message;
         this.date = new Date();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(Sring id) {
+        this.id = id;
     }
 
     public String getUserId() {
