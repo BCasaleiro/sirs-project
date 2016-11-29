@@ -3,6 +3,8 @@ package sirs.project.dispatchcentral;
 import java.util.Date;
 
 public class Request {
+
+    private String id;
     private String userId;
     private Date date;
     private String message;
@@ -25,6 +27,14 @@ public class Request {
     public void updatePriority(int value)
     {
         this.priority+=value;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getUserId() {

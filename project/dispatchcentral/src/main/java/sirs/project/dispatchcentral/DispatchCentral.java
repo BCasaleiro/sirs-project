@@ -24,16 +24,16 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-public class DispatchCentral {
+public class DispatchCentral{
 
-    /*
-     * Variables
-     */
+	/*
+	 * Variables
+	 */
 
-    final static String PROJ_DIR = System.getProperty("user.dir");
-    final Logger log = LoggerFactory.getLogger(DispatchCentral.class);
+	final static String PROJ_DIR = System.getProperty("user.dir");
+	final Logger log = LoggerFactory.getLogger(DispatchCentral.class);
 
-    private static DispatchCentral server;
+	private static DispatchCentral server;
     private ServerSocket serverSocket;
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
@@ -42,7 +42,7 @@ public class DispatchCentral {
     private DatabaseFunctions dbFunctions = null;
 
     private static PriorityQueue < RequestObject > queue = null;
-
+    
     /*
      * Main method
      */
@@ -56,6 +56,7 @@ public class DispatchCentral {
         server.runServer(port);
 
     }
+
     public static Comparator < RequestObject > comparator = new Comparator < RequestObject > () {@
         Override
         public int compare(RequestObject a, RequestObject b) {
@@ -91,6 +92,7 @@ public class DispatchCentral {
             System.out.println("Error Connecting to Database");
         }
     }
+
 
     public int connectToDatabase() {
         try {
@@ -146,7 +148,6 @@ public class DispatchCentral {
         }
         System.exit(0);
     }
-
 
     class QueueRemover implements Runnable {
         public QueueRemover() {}
@@ -213,6 +214,7 @@ public class DispatchCentral {
         private Request processRequest(String request) {
             StringTokenizer strTok = new StringTokenizer(request, ",");
             Request r = new Request();
+			r.setId(strTok.nextToken());
             r.setUserId(strTok.nextToken());
             r.setMessage(strTok.nextToken());
 
