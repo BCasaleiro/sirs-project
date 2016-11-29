@@ -6,12 +6,12 @@ public final class DatabaseConstants{
 
 	String requestsTableCreation = 
 			"CREATE TABLE IF NOT EXISTS REQUESTS "+
-            "(ID 			SERIAL	PRIMARY KEY	, "+
+            "(ID 			TEXT	                PRIMARY KEY	, "+
             "PHONENUMBER   	TEXT				NOT NULL, "+
             "LOCALIZATION 	TEXT				NULL, "+
             "MESSAGE		TEXT				NOT NULL, "+
             "TIMESTAMP      TIMESTAMP           NOT NULL, "+
-            "DISPATCHED     TEXT                NOT NULL);";
+            "RATED          BOOLEAN             NOT NULL);";
 
     String ratingsTableCreation = 
     		"CREATE TABLE IF NOT EXISTS RATINGS " +
@@ -23,10 +23,12 @@ public final class DatabaseConstants{
     String updateRating = "UPDATE RATINGS SET RATING=RATING+? WHERE PHONENUMBER=?;";
 
     String listPhoneNumbers = "SELECT PHONENUMBER FROM RATINGS WHERE PHONENUMBER=?;";
+
+    String requestExists = "SELECT ID FROM REQUESTS WHERE ID=?";
     
     String userRating = "SELECT RATING FROM RATINGS WHERE PHONENUMBER=?;";
 
-    String insertRequest = "INSERT INTO REQUESTS (PHONENUMBER, LOCALIZATION, MESSAGE, TIMESTAMP, DISPATCHED) VALUES (?,?,?,?,false);";
+    String insertRequest = "INSERT INTO REQUESTS (ID, PHONENUMBER, LOCALIZATION, MESSAGE, TIMESTAMP, RATED) VALUES (?,?,?,?,?,false);";
 
     String setDispatched = "UPDATE REQUESTS SET DISPATCHED=true WHERE ID = ?;";
 
