@@ -27,7 +27,7 @@ public class Request {
         return id;
     }
 
-    public void setId(Sring id) {
+    public void setId(String id) {
         this.id = id;
     }
 
