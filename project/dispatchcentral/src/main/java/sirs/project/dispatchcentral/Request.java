@@ -3,10 +3,13 @@ package sirs.project.dispatchcentral;
 import java.util.Date;
 
 public class Request {
+
+    private String id;
     private String userId;
     private Date date;
     private String message;
     private boolean dispatched;
+    private int priority;
 
     //for database test
     private String localization = "38.7369914,-9.1303272";
@@ -19,6 +22,19 @@ public class Request {
         this.userId = userId;
         this.message = message;
         this.date = new Date();
+    }
+
+    public void updatePriority(int value)
+    {
+        this.priority+=value;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getUserId() {
@@ -59,5 +75,13 @@ public class Request {
 
     public void setLocalization(String localization){
         this.localization=localization;
+    }
+
+    public int getPriority(){
+        return priority;
+    }
+
+    public void setPriority(int priority){
+        this.priority = priority;
     }
 }

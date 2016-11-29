@@ -4,8 +4,7 @@ import java.sql.Connection;
 import java.sql.*;
 
 public final class DatabaseFunctions{
-	//TODO add ROLLBACK instead of print when catches an exception 
-	
+
 	DatabaseConstants dbConstants = null;
 
 	public DatabaseFunctions(DatabaseConstants constants){
@@ -24,6 +23,9 @@ public final class DatabaseFunctions{
 		catch (SQLException e)
 		{
 			e.printStackTrace();
+			try{
+				c.rollback();
+			}catch(SQLException e2){e.printStackTrace();}
 		}
 	}
 
@@ -46,20 +48,42 @@ public final class DatabaseFunctions{
 		}
 		catch(SQLException e)
 		{
-			System.out.println(e);
 			e.printStackTrace();
+			try{
+				c.rollback();
+			}catch(SQLException e2){e.printStackTrace();}
 		}
 
 	}
 
-	public void insertRequest(Connection c, String command, Request request)
+	public boolean requestExists(Connection c, String command, Request request)
 	{
 		try{
 			PreparedStatement ps = c.prepareStatement(command);
-			ps.setString(1, request.getUserId());
-			ps.setString(2, request.getLocalization());
-			ps.setString(3, request.getMessage());
-			ps.setTimestamp(4, new Timestamp(request.getDate().getTime()));
+			ps.setString(1, request.getId());
+			ResultSet result = ps.executeQuery();
+			return (!resultEmpty(result));
+		}catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public void insertRequest(Connection c, String command, Request request)
+	{
+		if(requestExists(c,dbConstants.userExists ,request))
+		{
+			System.out.println("Request already exists");
+			return;
+		}
+		try{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, request.getId());
+			ps.setString(2, request.getUserId());
+			ps.setString(3, request.getLocalization());
+			ps.setString(4, request.getMessage());
+			ps.setTimestamp(5, new Timestamp(request.getDate().getTime()));
 			c.setAutoCommit(false);
 			ps.execute();
 			c.commit();
@@ -67,6 +91,9 @@ public final class DatabaseFunctions{
 		catch(SQLException e)
 		{
 			e.printStackTrace();
+			try{
+				c.rollback();
+			}catch(SQLException e2){e.printStackTrace();}
 		}
 	}
 
@@ -78,7 +105,7 @@ public final class DatabaseFunctions{
 			ps.setString(2, request.getLocalization());
 			ps.setString(3, request.getMessage());
 			ps.setTimestamp(4, new Timestamp(request.getDate().getTime()));
-			
+
 			ResultSet result = ps.executeQuery();
 			result.next();
 			return result.getInt("ID");
@@ -101,6 +128,9 @@ public final class DatabaseFunctions{
 		catch(SQLException e)
 		{
 			e.printStackTrace();
+			try{
+				c.rollback();
+			}catch(SQLException e2){e.printStackTrace();}
 		}
 	}
 
@@ -118,6 +148,9 @@ public final class DatabaseFunctions{
 		catch(SQLException e)
 		{
 			e.printStackTrace();
+			try{
+				c.rollback();
+			}catch(SQLException e2){e.printStackTrace();}
 		}
 	}
 
@@ -128,9 +161,7 @@ public final class DatabaseFunctions{
 			PreparedStatement ps = c.prepareStatement(command);
 			ps.setString(1, phoneNumber);
 			ResultSet result = ps.executeQuery();
-
 			return (!resultEmpty(result));
-	
 		}
 		catch(SQLException e)
 		{
