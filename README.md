@@ -12,13 +12,20 @@ João Godinho, 87830, joaogodinho_4@hotmail.com
 
 Para correr o projeto é necessário ir até à diretoria onde está o ficheiro **pom.xml**.
 
-Primeiro iniciar o **servidor** com o seguinte comando:
+Primeiro iniciar o **Certificate Authority** com o seguinte comando:
 
 ```
-mvn exec:java
+mvn -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.keyStore=src/main/resources/cakeystore.jks -Djavax.net.ssl.trustStore=src/main/resources/cakeystore.jks -Djavax.net.debug=ssl -Djavax.net.ssl.keyStorePassword=changeit -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java
 ```
 
-De seguida executar o **cliente** com o comando:
+De seguida executar o **Dispatch Central** com o comando:
+
 ```
-mvn exec:java
+mvn -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.keyStore=src/main/resources/dispatchcentralkeystore.jks -Djavax.net.ssl.trustStore=src/main/resources/dispatchcentralkeystore.jks -Djavax.net.debug=ssl -Djavax.net.ssl.keyStorePassword=changeit -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java
 ``` 
+
+Por último executar o **Client** com o comando:
+
+```
+mvn -Djavax.net.ssl.trustStore=src/main/resources/cakeystore.jks -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java
+```

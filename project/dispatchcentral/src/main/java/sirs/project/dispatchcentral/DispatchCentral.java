@@ -14,6 +14,10 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,15 +112,17 @@ public class DispatchCentral {
     private void runServer(int serverPort) {
         try {
             log.info("Starting Server in port " + serverPort);
-            serverSocket = new ServerSocket(serverPort);
+
+            SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
 
             executorService.submit(new QueueRemover());
             while (true) {
                 try {
-                    Socket s = serverSocket.accept();
-                    log.info("Connection accepted from " + s.getInetAddress().getHostAddress());
-                    executorService.submit(new ServiceRequest(s));
-                } catch (IOException ioe) {
+                	SSLSocket sslsocket = (SSLSocket) sslServerSocket.accept();
+                    log.info("Connection accepted from " + sslsocket.getInetAddress().getHostAddress());
+                    executorService.submit(new ServiceRequest(sslsocket));
+                } catch(IOException ioe) {
                     log.error("Error accepting connection");
                     log.error(ioe.getMessage());
                 }
@@ -149,7 +155,6 @@ public class DispatchCentral {
             while (true) {
                 if (!queue.isEmpty()) {
                     synchronized(queue) {
-                        System.out.println("HERE");
                         RequestObject requestObject = queue.poll();
                         serveRequest(requestObject);
                         //updatePriorities(1);
