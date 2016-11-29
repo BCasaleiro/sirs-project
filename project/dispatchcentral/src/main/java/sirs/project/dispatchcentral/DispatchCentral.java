@@ -175,6 +175,7 @@ public class DispatchCentral{
             PrintWriter out = requestObject.getOut();
             out.println("Help is on the way");
             System.out.println("Removed "+ request.getUserId()+"Priority: "+request.getPriority());
+            //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
         }
 
         //Needs testing
@@ -244,7 +245,7 @@ public class DispatchCentral{
                     Request request = processRequest(message);
                     log.info(request.getUserId() + ", " + request.getMessage());
                     //insert on db
-                    //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+                    
                     System.out.println("Request added to queue");
 
                     synchronized(queue) {

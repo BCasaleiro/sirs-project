@@ -60,10 +60,11 @@ public final class DatabaseFunctions{
 	{
 		try{
 			PreparedStatement ps = c.prepareStatement(command);
-			ps.setString(1, request.getUserId());
-			ps.setString(2, request.getLocalization());
-			ps.setString(3, request.getMessage());
-			ps.setTimestamp(4, new Timestamp(request.getDate().getTime()));
+			ps.setString(1, request.getId());
+			ps.setString(2, request.getUserId());
+			ps.setString(3, request.getLocalization());
+			ps.setString(4, request.getMessage());
+			ps.setTimestamp(5, new Timestamp(request.getDate().getTime()));
 			c.setAutoCommit(false);
 			ps.execute();
 			c.commit();
