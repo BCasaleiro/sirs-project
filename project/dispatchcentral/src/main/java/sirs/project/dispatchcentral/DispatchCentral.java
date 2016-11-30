@@ -16,7 +16,9 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -37,25 +39,49 @@ public class DispatchCentral{
     private ServerSocket serverSocket;
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+	private static SSLSocket sslconfirmationsocket = null;
+
     private Connection c = null;
     private DatabaseConstants dbConstants = null;
     private DatabaseFunctions dbFunctions = null;
 
     private static PriorityQueue < RequestObject > queue = null;
-    
+
     /*
      * Main method
      */
     public static void main(String[] args) throws IOException {
-
+		String serverName = args[2];
+		SSLSocketFactory factory=(SSLSocketFactory) SSLSocketFactory.getDefault();
         PropertyConfigurator.configure(PROJ_DIR + "/log4j.properties");
         server = new DispatchCentral();
         int port = Integer.parseInt(args[0]);
+		int confirmationPort =  Integer.parseInt(args[1]);
+
+		try {
+        	sslconfirmationsocket = (SSLSocket) factory.createSocket(serverName, confirmationPort);
+        }catch(IOException e){
+        	e.printStackTrace();
+        }
+
         queue = new PriorityQueue < RequestObject > (comparator);
         server.checkConnectivity();
         server.runServer(port);
 
     }
+
+	private int sendConfirmationRequest(String requestId, String userId) throws IOException{
+		 PrintWriter out = new PrintWriter(sslconfirmationsocket.getOutputStream(), true);
+
+		 out.println("Rate request " + requestId + " from user " + userId + ": ");
+		 BufferedReader in = new BufferedReader(new InputStreamReader(sslconfirmationsocket.getInputStream()));
+
+		 String fromServer = in.readLine();
+		 if(fromServer != null){
+			 return Integer.parseInt(fromServer);
+		 }
+		 return 0;
+	}
 
     public static Comparator < RequestObject > comparator = new Comparator < RequestObject > () {@
         Override
@@ -92,7 +118,6 @@ public class DispatchCentral{
             System.out.println("Error Connecting to Database");
         }
     }
-
 
     public int connectToDatabase() {
         try {
@@ -173,9 +198,15 @@ public class DispatchCentral{
             Request request = requestObject.getRequest();
             BufferedReader in = requestObject.getIn();
             PrintWriter out = requestObject.getOut();
-            out.println("Help is on the way");
-            System.out.println("Removed "+ request.getUserId()+"Priority: "+request.getPriority());
-            //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+			try {
+				out.println("Help is on the way");
+				int rating = sendConfirmationRequest(request.getId(), request.getUserId());
+				//TODO: rate the user accordingly
+	            System.out.println("Removed "+ request.getUserId()+"Priority: "+request.getPriority());
+	            //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
         }
 
         //Needs testing
@@ -187,7 +218,7 @@ public class DispatchCentral{
             }
             else
             {
-              
+
               RequestObject firstRequest = queue.poll();
               firstRequest.getRequest().updatePriority(value);
               queue.add(firstRequest);
@@ -198,7 +229,7 @@ public class DispatchCentral{
                   request.getRequest().updatePriority(value);
                   queue.add(request);
               }
-            }  
+            }
         }
     }
     /*
@@ -237,7 +268,7 @@ public class DispatchCentral{
 
             log.info("Started processing the request");
             try (
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true); 
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             ) {
                 String message = null;
@@ -245,7 +276,7 @@ public class DispatchCentral{
                     Request request = processRequest(message);
                     log.info(request.getUserId() + ", " + request.getMessage());
                     //insert on db
-                    
+
                     System.out.println("Request added to queue");
 
                     synchronized(queue) {
