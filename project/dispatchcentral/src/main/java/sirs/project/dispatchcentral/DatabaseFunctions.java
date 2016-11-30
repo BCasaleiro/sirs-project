@@ -72,7 +72,7 @@ public final class DatabaseFunctions{
 
 	public void insertRequest(Connection c, String command, Request request)
 	{
-		if(requestExists(c,dbConstants.userExists ,request))
+		if(requestExists(c, dbConstants.userExists ,request))
 		{
 			System.out.println("Request already exists");
 			return;
