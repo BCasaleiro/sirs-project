@@ -3,7 +3,6 @@ package sirs.project.ca;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.HashMap;
@@ -58,16 +57,6 @@ public class CA {
             log.error("Error starting Server on port " + serverPort);
             log.error(e.getMessage());
         }
-    }
-    
-    /*
-     * Function to be called to shutdown the server
-     */
-    private void stopServer() {
-    	log.info("Caught signal to shudown");
-        executorService.shutdownNow();
-        log.info("Exiting Server");
-        System.exit(0);
     }
     
     /*
