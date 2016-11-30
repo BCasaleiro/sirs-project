@@ -8,6 +8,7 @@ public class Request {
     private String userId;
     private Date date;
     private String message;
+    private String signature;
     private boolean dispatched;
     private int priority;
 
@@ -59,6 +60,14 @@ public class Request {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+    
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
     }
 
     public boolean isDispatched() {
