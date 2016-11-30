@@ -1,15 +1,11 @@
 package sirs.project.dispatchcentral;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -27,7 +23,6 @@ import java.sql.DriverManager;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.PriorityQueue;
-import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,18 +35,20 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sirs.project.clientrequest.Request;
+
 public class DispatchCentral{
 
 	/*
 	 * Variables
 	 */
-
 	final static String PROJ_DIR = System.getProperty("user.dir");
 	final static String CA_IP = "localhost"; 
-	final static int CA_PORT = 9998;
+	final static String ALIAS = "dispatchcentral";
 	final static String KEYSTORE_PATH = PROJ_DIR + "/src/main/resources/dispatchcentralkeystore.jks";
 	private final static char[] PASS = "changeit".toCharArray();
-	private final static String ALIAS = "dispatchcentral";
+	final static int CA_PORT = 9998;
+	
 	final Logger log = LoggerFactory.getLogger(DispatchCentral.class);
 
 	private static DispatchCentral server;
@@ -155,16 +152,6 @@ public class DispatchCentral{
         }
     }
 
-    /*
-     * Function to be called to shutdown the server
-     */
-    private void stopServer() {
-    	log.info("Caught signal to shudown");
-        executorService.shutdownNow();
-        log.info("Exiting Server");
-        System.exit(0);
-    }
-
     class QueueRemover implements Runnable {
         public QueueRemover() {}
 
@@ -215,10 +202,13 @@ public class DispatchCentral{
         
         public void serveRequest(RequestObject requestObject) {
             Request request = requestObject.getRequest();
-            BufferedReader in = requestObject.getIn();
-            PrintWriter out = requestObject.getOut();
+            ObjectOutputStream out = requestObject.getOut();
             String message = "Help is on the way";          
-            out.println(message + "," + signAnswer(message));
+            try {
+				out.writeObject(message + "," + signAnswer(message));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
             log.info("Removed "+ request.getUserId()+"Priority: "+request.getPriority());
             //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
         }
@@ -252,21 +242,6 @@ public class DispatchCentral{
 
         public ServiceRequest(SSLSocket connection) {
             this.sslsocket = connection;
-        }
-
-        private Request processRequest(String request) {
-            StringTokenizer strTok = new StringTokenizer(request, ",");
-            Request r = new Request();
-			r.setId(strTok.nextToken());
-            r.setUserId(strTok.nextToken());
-            r.setMessage(strTok.nextToken());
-            r.setSignature(strTok.nextToken());
-
-            int rating = 1000;
-            log.info("Rating: " + rating);
-            r.setPriority(rating);
-
-            return r;
         }
 
         public void testRequestdbFunctions(Request request) {
@@ -310,15 +285,16 @@ public class DispatchCentral{
 
             log.info("Started processing the request");
             try (
-                PrintWriter out = new PrintWriter(sslsocket.getOutputStream(), true); 
-                BufferedReader in = new BufferedReader(new InputStreamReader(sslsocket.getInputStream()));
+            	ObjectOutputStream out = new ObjectOutputStream(sslsocket.getOutputStream()); 
+            	ObjectInputStream in = new ObjectInputStream(sslsocket.getInputStream());
             ) {
-                String message = null;
-                if ((message = in .readLine()) != null) {
-                    Request request = processRequest(message);
+                Request request = null;
+                if ((request = (Request)in.readObject()) != null) {
+                	request.setPriority(1000);
                     log.info("ID: " + request.getUserId());
                     log.info("Message: " + request.getMessage());
                     log.info("Signature: " + request.getSignature());
+                    log.info("Priority: " + request.getPriority());
                     
                     if(verifySignature(request)){
                     	log.info("Request added to queue");
@@ -337,7 +313,7 @@ public class DispatchCentral{
                     	log.error("Invalid Signature!!");
                     }                  
                 }
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 log.error(e.getMessage());
             }
         }
