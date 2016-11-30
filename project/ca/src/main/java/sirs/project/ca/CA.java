@@ -1,18 +1,13 @@
 package sirs.project.ca;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,27 +19,27 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sirs.project.certificaterequest.CertificateRequest;
+
 
 public class CA {
 	
 	final static String PROJ_DIR = System.getProperty("user.dir");
 	final Logger log = LoggerFactory.getLogger(CA.class);
-    private ServerSocket serverSocket;
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
-
+    private Map<String, Certificate> certificates = new HashMap<String, Certificate>();
 	
     public static void main(String[] args ){
     	PropertyConfigurator.configure(PROJ_DIR + "/log4j.properties");
         int port = Integer.parseInt(args[0]);
         CA ca = new CA();
-        ca.runServer(port);
-        
+        ca.runServer(port); 
     }
     
     /*
      * Function that will wait for incoming connections
      */
-    private void runServer(int serverPort) {        
+    private void runServer(int serverPort) {  
         try {
             log.info("Starting Server in port " + serverPort);
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
@@ -69,13 +64,9 @@ public class CA {
      * Function to be called to shutdown the server
      */
     private void stopServer() {
+    	log.info("Caught signal to shudown");
         executorService.shutdownNow();
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            log.error("Error while closing the server");
-            log.error(e.getMessage());
-        }
+        log.info("Exiting Server");
         System.exit(0);
     }
     
@@ -90,44 +81,32 @@ public class CA {
             this.sslsocket = connection;
         }
 
-        private void processRequest(String request) {
-
-        }
-
         public void run(){
         	
         	log.info("Started processing the request");
         	try(
-        		//PrintWriter out = new PrintWriter(sslsocket.getOutputStream(), true);
-        		//BufferedReader in = new BufferedReader(new InputStreamReader(sslsocket.getInputStream()));
         		ObjectInputStream fromClient = new ObjectInputStream(sslsocket.getInputStream());
         		ObjectOutputStream toClient = new ObjectOutputStream(sslsocket.getOutputStream());
         	){
         		String message = (String)fromClient.readObject();
         		if(message.equals("Sending Certificate")){
         			toClient.writeObject("Proceed");
-        			byte[] cert = (byte[])fromClient.readObject();
-            		java.security.cert.Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(cert));
-            		System.out.println(certificate);
+        			CertificateRequest cr = (CertificateRequest)fromClient.readObject();
+        			certificates.put(cr.getPhoneNumber(), cr.getCert());
+        			log.info("Successfully added certificate to Map");
         		}
-        		
-        		
-        		
-        		/*String message = null;
-        		if((message = in.readLine()) != null){
-        			System.out.println(message);
+        		else{ //When dispatch central requests for an user certificate
+        			//Message will contain the phone number to search in the map
+        			Certificate cert = certificates.get(message);
         			try {
-						CertificateFactory cf = CertificateFactory.getInstance("X.509");
-						InputStream inStream = new ByteArrayInputStream(message.getBytes());
-						Certificate cert = cf.generateCertificate(inStream);
-						System.out.println(cert);
-					} catch (CertificateException e) {
+        				//Send the certificate to dispatch central
+						toClient.writeObject(cert.getEncoded());
+					} catch (CertificateEncodingException e) {
 						e.printStackTrace();
 					}
-        			System.out.println(message);
-        			out.println("Mensagem recebida!!!!");
-        		}*/
-        	}catch(IOException | ClassNotFoundException | CertificateException e){
+        		}
+        	}catch(IOException | ClassNotFoundException e){
+        		e.printStackTrace();
         		log.error(e.getMessage());
         	}
         }        
