@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
@@ -29,11 +28,14 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import sirs.project.certificaterequest.CertificateRequest;
+import sirs.project.clientrequest.Request;
 
 
-public class Client
-{
+public class Client{
 
+	/*
+	 * Variables
+	 */
 	private final static String PROJ_DIR = System.getProperty("user.dir");
 	private final static String KEYSTORE_PATH = PROJ_DIR + "/src/main/resources/clientappkeystore.jks";
 	private final static String TRUSTSTORE_PATH = PROJ_DIR + "/src/main/resources/cakeystore.jks";
@@ -111,24 +113,30 @@ public class Client
 
 	
 	private void sendRequest() throws IOException{
-		 PrintWriter out = new PrintWriter(ssldispatchsocket.getOutputStream(), true);
+		 ObjectOutputStream out = new ObjectOutputStream(ssldispatchsocket.getOutputStream());
+		 ObjectInputStream in = new ObjectInputStream(ssldispatchsocket.getInputStream());
 		 String id = hashText(phoneNumber + (new Date()).getTime());
+		 Request request = new Request(id, phoneNumber, "HELP!");
 		 String message = id + "," +  phoneNumber + ",HELP!";
-		 String signature = signRequest(message);
-		 if(signature != null){
-			 out.println(message + "," + signature);
-
+		 request.setSignature(signRequest(message));
+		 if(request.getSignature() != null){
+			 out.writeObject(request);
+		
 		 }
-		 BufferedReader in = new BufferedReader(new InputStreamReader(ssldispatchsocket.getInputStream()));
-
-		 String fromServer = in.readLine();
-		 if(fromServer != null){
-			 System.out.println(fromServer);
-			 if(verifySignature(fromServer)){
-				 System.out.println("SUCESSOOOOOOO");
+		
+		String fromServer;
+		try {
+			fromServer = (String)in.readObject();
+			if(fromServer != null){
+				 if(verifySignature(fromServer)){
+					 System.out.println("[DEBUG] Message was from a trusted source");
+					 System.out.println("Received: " + fromServer.split(",")[0]);
+				 }			 
 			 }
-			 
-		 }
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		 
 	}
 
 	private void clearScreen(){
