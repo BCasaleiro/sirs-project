@@ -56,8 +56,27 @@ public final class DatabaseFunctions{
 
 	}
 
+	public boolean requestExists(Connection c, String command, Request request)
+	{
+		try{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, request.getId());
+			ResultSet result = ps.executeQuery();
+			return (!resultEmpty(result));
+		}catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public void insertRequest(Connection c, String command, Request request)
 	{
+		if(requestExists(c,dbConstants.userExists ,request))
+		{
+			System.out.println("Request already exists");
+			return;
+		}
 		try{
 			PreparedStatement ps = c.prepareStatement(command);
 			ps.setString(1, request.getId());
