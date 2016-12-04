@@ -1,13 +1,16 @@
-package sirs.project.dispatchcentral;
+package sirs.project.clientrequest;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Request {
+public class Request implements Serializable{
 
-    private String id;
+	private static final long serialVersionUID = 2899772797212095685L;
+	private String id;
     private String userId;
     private Date date;
     private String message;
+    private String signature;
     private boolean dispatched;
     private int priority;
 
@@ -18,7 +21,8 @@ public class Request {
         this.date = new Date();
     }
 
-    public Request(String userId, String message) {
+    public Request(String id, String userId, String message) {
+    	this.id = id;
         this.userId = userId;
         this.message = message;
         this.date = new Date();
@@ -60,6 +64,14 @@ public class Request {
     public void setMessage(String message) {
         this.message = message;
     }
+    
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
 
     public boolean isDispatched() {
         return dispatched;
@@ -85,3 +97,4 @@ public class Request {
         this.priority = priority;
     }
 }
+

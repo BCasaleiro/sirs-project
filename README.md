@@ -21,7 +21,7 @@ mvn -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.
 De seguida executar o **Dispatch Central** com o comando:
 
 ```
-mvn -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.keyStore=src/main/resources/dispatchcentralkeystore.jks -Djavax.net.ssl.trustStore=src/main/resources/dispatchcentralkeystore.jks -Djavax.net.debug=ssl -Djavax.net.ssl.keyStorePassword=changeit -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java
+mvn -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.keyStore=src/main/resources/dispatchcentralkeystore.jks -Djavax.net.ssl.trustStore=src/main/resources/cakeystore.jks -Djavax.net.debug=ssl -Djavax.net.ssl.keyStorePassword=changeit -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java
 ``` 
 
 Por último executar o **Client** com o comando:
