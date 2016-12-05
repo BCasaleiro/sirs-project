@@ -1,6 +1,9 @@
 package sirs.project.dispatchcentral;
 
 import java.sql.Connection;
+
+import sirs.project.clientrequest.Request;
+
 import java.sql.*;
 
 public final class DatabaseFunctions{

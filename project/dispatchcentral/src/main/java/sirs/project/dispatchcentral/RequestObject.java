@@ -1,15 +1,17 @@
 package sirs.project.dispatchcentral;
 
-import java.io.PrintWriter;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import sirs.project.clientrequest.Request;
 
 public class RequestObject {
+	
     private Request request;
-    private PrintWriter out;
-    private BufferedReader in;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
 
-    public RequestObject(Request request, PrintWriter out, BufferedReader in) {
+    public RequestObject(Request request, ObjectOutputStream out, ObjectInputStream in) {
         this.request = request;
         this.out = out;
         this.in = in;
@@ -23,18 +25,18 @@ public class RequestObject {
         this.request = request;
     }
     
-    public PrintWriter getOut(){
+    public ObjectOutputStream getOut(){
         return out;
     }
 
-    public void setOut(PrintWriter out){
+    public void setOut(ObjectOutputStream out){
         this.out = out;
     }
-    public BufferedReader getIn(){
+    public ObjectInputStream getIn(){
         return in;
     }
 
-    public void setIn(BufferedReader in){
+    public void setIn(ObjectInputStream in){
         this.in = in;
     }
 }
