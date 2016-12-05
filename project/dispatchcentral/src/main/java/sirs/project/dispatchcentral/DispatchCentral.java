@@ -224,15 +224,54 @@ public class DispatchCentral{
     		}
     	}
 
+		private boolean verifySignature(String message){
+			Certificate cert = getCertificate(TRUSTSTORE_PATH, DC_ALIAS);
+			PublicKey pk = cert.getPublicKey();
+			StringTokenizer strTok = new StringTokenizer(message, ",");
+			String answer = strTok.nextToken();
+			String signature = strTok.nextToken();
+	    	try {
+	    		byte[] signaturebytes = Base64.getDecoder().decode(signature);
+				byte[] messagebytes = answer.getBytes();
+				Signature sig = Signature.getInstance("SHA1WithRSA");
+				sig.initVerify(pk);
+				sig.update(messagebytes);
+				return sig.verify(signaturebytes);
+			} catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+
+		private int sendConfirmationRequest(Request request) throws IOException{
+			 ObjectOutputStream out = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
+			 ObjectInputStream in = new ObjectInputStream(sslconfirmationsocket.getInputStream());
+			 String message = "Rate the request " + request.getId() + " by user " + request.getUserId() + ": " ;
+			 out.writeObject(message + "," + signAnswer(message));
+
+			String fromServer;
+			try {
+				fromServer = (String)in.readObject();
+				if(fromServer != null){
+					 if(verifySignature(fromServer)){
+						 System.out.println("[DEBUG] Message was from a trusted source");
+						 return Integer.parseInt(fromServer);
+					 }
+				 }
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+
+		}
+
         public void serveRequest(RequestObject requestObject) {
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
             String message = "Help is on the way";
             try {
 				out.writeObject(message + "," + signAnswer(message));
-				// int rating = sendConfirmationRequest(request.getId(), request.getUserId());
+				int rating = sendConfirmationRequest(request);
 				//TODO: rate the user accordingly
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

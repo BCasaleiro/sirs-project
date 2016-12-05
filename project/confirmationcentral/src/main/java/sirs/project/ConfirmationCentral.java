@@ -15,8 +15,8 @@ import java.io.InputStreamReader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ConfirmationCentral
-{
+public class ConfirmationCentral {
+
     private static ConfirmationCentral server;
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
@@ -58,25 +58,75 @@ public class ConfirmationCentral
             this.socket = connection;
         }
 
+        private String signAnswer(String message){
+        	try {
+    			byte[] b = message.getBytes("UTF-8");
+    			Signature sig = Signature.getInstance("SHA1WithRSA");
+    			sig.initSign(getPrivateKey());
+    			sig.update(b);
+    			byte[] signatureBytes = sig.sign();
+    			return Base64.getEncoder().encodeToString(signatureBytes);
+    		} catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+    			e.printStackTrace();
+    			return null;
+    		}
+        }
+
+        private PrivateKey getPrivateKey(){
+    		FileInputStream fIn = null;
+    		try {
+    			fIn = new FileInputStream(KEYSTORE_PATH);
+    			KeyStore keystore = KeyStore.getInstance("JKS");
+    		    keystore.load(fIn, PASS);
+    		    return (PrivateKey)keystore.getKey(ALIAS, PASS);
+    		} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
+    			e.printStackTrace();
+    			return null;
+    		}
+    	}
+
+        private boolean verifySignature(String message){
+    		Certificate cert = getCertificate(TRUSTSTORE_PATH, DC_ALIAS);
+    		PublicKey pk = cert.getPublicKey();
+    		StringTokenizer strTok = new StringTokenizer(message, ",");
+    		String answer = strTok.nextToken();
+    		String signature = strTok.nextToken();
+        	try {
+        		byte[] signaturebytes = Base64.getDecoder().decode(signature);
+    			byte[] messagebytes = answer.getBytes();
+    			Signature sig = Signature.getInstance("SHA1WithRSA");
+    			sig.initVerify(pk);
+    			sig.update(messagebytes);
+    			return sig.verify(signaturebytes);
+    		} catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+    			e.printStackTrace();
+    			return false;
+    		}
+    	}
+
         public void run() {
 
             System.out.println("Started processing the request");
             try (
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                ObjectOutputStream out = new ObjectOutputStream(sslsocket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(sslsocket.getInputStream());
             ) {
                 String message = null;
-                if ((message = in .readLine()) != null) {
+                if ((message = (String)in.readObject()) != null) {
+                	if(verifySignature(message)){
+                        System.out.println(message);
 
-                    System.out.println(message);
-
-                    Scanner scan = new Scanner(System.in);
-                    String s = scan.next();
-                    int i = scan.nextInt();
-
-                    out.println(i + "");
+                        Scanner scan = new Scanner(System.in);
+                        String s = scan.next();
+                        int i = scan.nextInt();
+                        
+                        String answer = i + "";
+                        out.writeObject(answer + "," + signAnswer(answer));
+                    }else{
+                    	System.out.println("Invalid Signature!!");
+                    }
                 }
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println(e.getMessage());
             }
         }
