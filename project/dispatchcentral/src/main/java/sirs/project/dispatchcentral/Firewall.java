@@ -17,16 +17,27 @@ public class Firewall
 		
 	}
 
-	public int filterRequest(Request request)
+	public void filterRequest(RequestObject requestObject, PriorityQueue queue)
 	{
+		ObjectOutputStream out = requestObject.getOut();
+		Request request = requestObject.getRequest();
 		//verify if already exists
 		//dont serve it - Write to client
-		verifyIfExists(request);
 		
 		//verify if something is blank
 		//dont serve it - Write to client
-		verifyIfBlankNull(request);
 
+		if(verifyIfExists(request) || verifyIfBlankNull(request))
+		{
+			out.write("Invalid Request");
+			return;
+		}
+
+		if(verifyDate(request.getDate())==false)
+		{
+			out.write("Bad Date Input");
+			return;
+		}
 		//verify if the location is to random
 		//verifyPreviousLocation(request);
 
@@ -35,8 +46,17 @@ public class Firewall
 		//reduce priority and insert on queue
 		//verifyStrangeMessage(request);
 
+		synchronized(queue) {
+            queue.add(requestObject));
+            log.info("Queue size: " + queue.size());
+            try{
+              queue.wait();
+            }catch(InterruptedException e)
+            {
+              e.printStackTrace();
+            }
+        }
 
-		return 0;
 	}
 
 	public boolean verifyIfExists(Request request)
@@ -79,16 +99,6 @@ public class Firewall
 		}
 
 		return true;
-	}
-
-	public int verifyStrangeMessage(Request request)
-	{
-		return 0;
-	}
-
-	public int verifyPreviousLocation(Request request)
-	{
-		return 0;
 	}
 
 }

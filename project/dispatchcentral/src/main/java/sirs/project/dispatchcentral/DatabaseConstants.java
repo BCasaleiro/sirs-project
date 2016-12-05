@@ -33,6 +33,5 @@ public final class DatabaseConstants{
     String setDispatched = "UPDATE REQUESTS SET DISPATCHED=true WHERE ID = ?;";
 
     String getRequestId = "SELECT ID FROM REQUESTS WHERE PHONENUMBER=? AND LOCALIZATION=? AND MESSAGE=? AND TIMESTAMP=?;";
-    
-    String userExists;
+
 }   

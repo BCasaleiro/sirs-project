@@ -202,11 +202,33 @@ public class DispatchCentral{
     			return null;
     		}
     	}
-        
+        public float expectedTime(String dist1, String dist2)
+        {
+            RADIUS_EARTH = 6371;
+            VELOCITY = 50;
+
+            d1 = dist1.split(',');
+            d2 = dist2.split(',');
+            
+            double latDistance = Math.toRadians((double)d1[0] - (double)d2[0]);
+            double lngDistance = Math.toRadians((double)d2[0] - (double)d2[1]);
+
+            double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+              + Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(venueLat))
+              * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
+
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            double distance = (double) (RADIUS_EARTH * c) 
+
+            return Math.round(distance/VELOCITY);
+
+        }
         public void serveRequest(RequestObject requestObject) {
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
             String message = "Help is on the way";          
+            System.out.println("Expected Time: ", expectedTime);
             try {
 				out.writeObject(message + "," + signAnswer(message));
 			} catch (IOException e) {
@@ -300,18 +322,10 @@ public class DispatchCentral{
                     log.info("Priority: " + request.getPriority());
                     
                     if(verifySignature(request)){
-                    	log.info("Request added to queue");
+                    	//pass through the firewall filter
+                        firewall.filterRequest(new RequestObject(request, out, in), queue);
+                        log.info("Request added to queue");
 
-                        synchronized(queue) {
-                            queue.add(new RequestObject(request, out, in ));
-                            log.info("Queue size: " + queue.size());
-                            try{
-                              queue.wait();
-                            }catch(InterruptedException e)
-                            {
-                              e.printStackTrace();
-                            }
-                        }
                     }else{
                     	log.error("Invalid Signature!!");
                     }                  
