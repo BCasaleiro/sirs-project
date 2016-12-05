@@ -10,7 +10,13 @@ João Godinho, 87830, joaogodinho_4@hotmail.com
 
 ## Instruções de execução
 
-Para correr o projeto é necessário ir até à diretoria onde está o ficheiro **pom.xml**.
+Os comandos mvn executam-se sempre onde está o ficheiro **pom.xml**.
+
+Compilar e instalar a dependência do **CertificateRequest**:
+
+```
+mvn clean install
+```
 
 Primeiro iniciar o **Certificate Authority** com o seguinte comando:
 
