@@ -7,8 +7,8 @@ public final class DatabaseFunctions{
 
 	DatabaseConstants dbConstants = null;
 
-	public DatabaseFunctions(DatabaseConstants constants){
-		dbConstants = constants;
+	public DatabaseFunctions(){
+		this.dbConstants = new DatabaseConstants();
 	}
 	public void createTable(Connection c, String command)
 	{
@@ -72,7 +72,7 @@ public final class DatabaseFunctions{
 
 	public void insertRequest(Connection c, String command, Request request)
 	{
-		if(requestExists(c,dbConstants.userExists ,request))
+		if(requestExists(c,dbConstants.requestExists ,request))
 		{
 			System.out.println("Request already exists");
 			return;

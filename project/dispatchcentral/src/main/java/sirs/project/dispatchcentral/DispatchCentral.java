@@ -85,7 +85,7 @@ public class DispatchCentral{
     public void checkConnectivity() {
         dbConstants = new DatabaseConstants();
         if (connectToDatabase() == 1) {
-            dbFunctions = new DatabaseFunctions(dbConstants);
+            dbFunctions = new DatabaseFunctions();
             createNecessaryTables();
             System.out.println("Created necessary tables");
         } else {
@@ -117,7 +117,7 @@ public class DispatchCentral{
 
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
-
+            Firewall firewall = new Firewall(c);
             executorService.submit(new QueueRemover());
             while (true) {
                 try {
