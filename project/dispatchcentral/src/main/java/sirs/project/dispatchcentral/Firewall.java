@@ -8,17 +8,23 @@ import java.util.PriorityQueue;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sirs.project.clientrequest.Request;
 public class Firewall
 {
 	private Connection c = null;
 	private DatabaseFunctions dbFunctions = null;
 	private DatabaseConstants dbConstants = null;
+	private Logger log = null;
 
-	public Firewall(Connection c){
+	public Firewall(Connection c, Logger log){
 		this.c = c;
 		this.dbFunctions = new DatabaseFunctions();
 		this.dbConstants = new DatabaseConstants();
+		this.log = log;
 		
 	}
 
@@ -32,26 +38,30 @@ public class Firewall
 		
 		//verify if something is blank
 		//dont serve it - Write to client
-
+		/*
 		if(verifyIfExists(request) || verifyIfBlankNull(request))
 		{
 			try {
 				out.writeObject("Invalid Request");  
+				log.info("Invalid request");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return;
 		}
+		*/
 
 		if(verifyDate(request.getDate())==false)
 		{
 			try {
 				out.writeObject("Bad Date Input");
+				log.info("Bad date input");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return;
 		}
+		
 		//verify if the location is to random
 		//verifyPreviousLocation(request);
 
@@ -62,6 +72,7 @@ public class Firewall
 
 		synchronized(queue) {
             queue.add(requestObject);
+            log.info("Request added to queue");
             System.out.println("Queue size: " + queue.size());
             try{
             	while(queue.size()!=0)
@@ -84,11 +95,11 @@ public class Firewall
 
 	public boolean verifyIfBlankNull(Request request)
 	{
-		if(request.getId().equals("") || request.getId().equals(null))
+		if(request.getId()==null || request.getId().isEmpty())
 		{
 			return true;
 		}
-		if(request.getUserId().equals("") || request.getUserId().equals(null))
+		if(request.getUserId()==null || request.getUserId().isEmpty())
 		{
 			return true;
 		}
@@ -96,11 +107,11 @@ public class Firewall
 		{
 			return true;
 		}
-		if(request.getMessage().equals(""))
+		if(request.getMessage().isEmpty() || request.getMessage()==null)
 		{
 			return true;
 		}
-		if(request.getPriority()<=0)
+		if(request.getPriority()<100)
 		{
 			return true;
 		}

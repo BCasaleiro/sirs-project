@@ -266,7 +266,7 @@ public class DispatchCentral{
 
         private SSLSocket sslsocket;
 
-        private Firewall firewall = new Firewall(c);
+        private Firewall firewall = new Firewall(c, log);
         public ServiceRequest(SSLSocket connection) {
             this.sslsocket = connection;
         }
@@ -329,7 +329,7 @@ public class DispatchCentral{
                         int userRating = dbFunctions.userRating(c, dbConstants.userRating, request.getUserId());
                         request.setPriority(userRating);
                         firewall.filterRequest(new RequestObject(request, out, in), queue);
-                        log.info("Request added to queue");
+                        //queue.add(new RequestObject(request, out, in));
 
                     }else{
                     	log.error("Invalid Signature!!");
