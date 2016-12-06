@@ -1,24 +1,49 @@
 package sirs.project;
 
-import java.io.IOException;
-
+import java.net.Socket;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import java.util.Scanner;
 import java.io.PrintWriter;
-import java.net.Socket;
+import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-import java.util.concurrent.ExecutorService;
+import java.util.Base64;
+import java.util.Scanner;
+import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
+import java.security.KeyStore;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.KeyStoreException;
+import java.security.SignatureException;
+import java.security.InvalidKeyException;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 
 public class ConfirmationCentral {
 
     private static ConfirmationCentral server;
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+    final static String PROJ_DIR = System.getProperty("user.dir");
+    final static String KEYSTORE_PATH = PROJ_DIR + "/src/main/resources/confirmationcentralkeystore.jks";
+    private final static String TRUSTSTORE_PATH = PROJ_DIR + "/src/main/resources/cakeystore.jks";
+    private final static String DC_ALIAS = "dispatchcentral";
+    private final static char[] PASS = "changeit".toCharArray();
+    final static String ALIAS = "confirmationcentral";
 
     public static void main( String[] args ) {
         server = new ConfirmationCentral();
@@ -52,10 +77,10 @@ public class ConfirmationCentral {
 
     class ServiceRequest implements Runnable {
 
-        private Socket socket;
+        private SSLSocket sslsocket;
 
-        public ServiceRequest(Socket connection) {
-            this.socket = connection;
+        public ServiceRequest(SSLSocket connection) {
+            this.sslsocket = connection;
         }
 
         private String signAnswer(String message){
@@ -84,6 +109,19 @@ public class ConfirmationCentral {
     			return null;
     		}
     	}
+
+        private Certificate getCertificate(String path, String alias){
+			FileInputStream fIn = null;
+			try {
+				fIn = new FileInputStream(path);
+				KeyStore keystore = KeyStore.getInstance("JKS");
+			    keystore.load(fIn, PASS);
+			    return keystore.getCertificate(alias);
+			} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
 
         private boolean verifySignature(String message){
     		Certificate cert = getCertificate(TRUSTSTORE_PATH, DC_ALIAS);
@@ -119,7 +157,7 @@ public class ConfirmationCentral {
                         Scanner scan = new Scanner(System.in);
                         String s = scan.next();
                         int i = scan.nextInt();
-                        
+
                         String answer = i + "";
                         out.writeObject(answer + "," + signAnswer(answer));
                     }else{

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="1" failures="0" name="sirs.project.AppTest" time="0.004" errors="0" skipped="0">
+<testsuite tests="1" failures="0" name="sirs.project.AppTest" time="0.005" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib"/>
@@ -27,9 +27,12 @@
 "/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="os.name" value="Mac OS X"/>
+    <property name="javax.net.ssl.keyStore" value="src/main/resources/dispatchcentralkeystore.jks"/>
     <property name="classworlds.conf" value="/opt/apache-maven-3.3.9/bin/m2.conf"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="javax.net.ssl.keyStorePassword" value="changeit"/>
     <property name="java.library.path" value="/Users/bcasaleiro/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="javax.net.ssl.trustStore" value="src/main/resources/cakeystore.jks"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.class.version" value="52.0"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
@@ -40,16 +43,18 @@
     <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
     <property name="java.specification.version" value="1.8"/>
     <property name="file.encoding" value="UTF-8"/>
+    <property name="javax.net.ssl.trustStoreType" value="jks"/>
     <property name="user.name" value="bcasaleiro"/>
     <property name="java.class.path" value="/opt/apache-maven-3.3.9/boot/plexus-classworlds-2.5.2.jar"/>
     <property name="java.vm.specification.version" value="1.8"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.home" value="/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre"/>
-    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher clean install exec:java"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.keyStore=src/main/resources/dispatchcentralkeystore.jks -Djavax.net.ssl.trustStore=src/main/resources/cakeystore.jks -Djavax.net.debug=ssl -Djavax.net.ssl.keyStorePassword=changeit -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
     <property name="user.language" value="en"/>
     <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
     <property name="java.vm.info" value="mixed mode"/>
+    <property name="javax.net.debug" value="ssl"/>
     <property name="java.version" value="1.8.0_111"/>
     <property name="java.ext.dirs" value="/Users/bcasaleiro/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
     <property name="sun.boot.class.path" value="/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/jre/classes"/>
@@ -57,11 +62,13 @@
     <property name="maven.home" value="/opt/apache-maven-3.3.9"/>
     <property name="file.separator" value="/"/>
     <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="javax.net.ssl.keyStoreType" value="jks"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="javax.net.ssl.trustStorePassword" value="changeit"/>
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="sirs.project.AppTest" name="testApp" time="0.004"/>
+  <testcase classname="sirs.project.AppTest" name="testApp" time="0.005"/>
 </testsuite>

@@ -25,7 +25,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.util.StringTokenizer;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
@@ -47,6 +47,8 @@ public class DispatchCentral{
 	final static String CA_IP = "localhost";
 	final static String ALIAS = "dispatchcentral";
 	final static String KEYSTORE_PATH = PROJ_DIR + "/src/main/resources/dispatchcentralkeystore.jks";
+	private final static String TRUSTSTORE_PATH = PROJ_DIR + "/src/main/resources/cakeystore.jks";
+	private final static String CC_ALIAS = "confirmationcentral";
 	private final static char[] PASS = "changeit".toCharArray();
 	final static int CA_PORT = 9998;
 
@@ -85,19 +87,6 @@ public class DispatchCentral{
         server.runServer(port);
 
     }
-
-	private int sendConfirmationRequest(String requestId, String userId) throws IOException{
-		 PrintWriter out = new PrintWriter(sslconfirmationsocket.getOutputStream(), true);
-
-		 out.println("Rate request " + requestId + " from user " + userId + ": ");
-		 BufferedReader in = new BufferedReader(new InputStreamReader(sslconfirmationsocket.getInputStream()));
-
-		 String fromServer = in.readLine();
-		 if(fromServer != null){
-			 return Integer.parseInt(fromServer);
-		 }
-		 return 0;
-	}
 
     public static Comparator < RequestObject > comparator = new Comparator < RequestObject > () {@
         Override
@@ -225,7 +214,7 @@ public class DispatchCentral{
     	}
 
 		private boolean verifySignature(String message){
-			Certificate cert = getCertificate(TRUSTSTORE_PATH, DC_ALIAS);
+			Certificate cert = getCertificate(TRUSTSTORE_PATH, CC_ALIAS);
 			PublicKey pk = cert.getPublicKey();
 			StringTokenizer strTok = new StringTokenizer(message, ",");
 			String answer = strTok.nextToken();
@@ -240,6 +229,19 @@ public class DispatchCentral{
 			} catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
 				e.printStackTrace();
 				return false;
+			}
+		}
+
+		private Certificate getCertificate(String path, String alias){
+			FileInputStream fIn = null;
+			try {
+				fIn = new FileInputStream(path);
+				KeyStore keystore = KeyStore.getInstance("JKS");
+			    keystore.load(fIn, PASS);
+			    return keystore.getCertificate(alias);
+			} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
+				e.printStackTrace();
+				return null;
 			}
 		}
 
@@ -261,7 +263,7 @@ public class DispatchCentral{
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-
+			return -1;
 		}
 
         public void serveRequest(RequestObject requestObject) {
