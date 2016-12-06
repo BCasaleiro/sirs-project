@@ -207,11 +207,13 @@ public final class DatabaseFunctions{
 			if(resultEmpty(result))
 			{
 				//user can send a request
+				System.out.println("Result Empty");
 				return 0;
 			}
 			else
 			{
 				//user sent a request in the last 20 seconds
+				System.out.println("Result Has something");
 				return 1;
 			}
 		}

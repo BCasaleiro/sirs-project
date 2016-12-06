@@ -33,8 +33,9 @@ public class Firewall
 		ObjectOutputStream out = requestObject.getOut();
 		Request request = requestObject.getRequest();
 
+		/*
 		//check if user sent a request in the last 20 seconds
-		
+		System.out.println("Last Request From User: " +dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId()));
 		if(dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId())==1)
 		{
 			try{
@@ -47,7 +48,7 @@ public class Firewall
 			}
 			return;
 		}
-		
+		*/
 
 		//verify if already exists
 		//dont serve it - Write to client
@@ -66,7 +67,7 @@ public class Firewall
 			return;
 		}
 		*/
-
+		/*
 		if(verifyDate(request.getDate())==false)
 		{
 			try {
@@ -77,7 +78,7 @@ public class Firewall
 			}
 			return;
 		}
-		
+		*/
 		//verify if the location is to random
 		//verifyPreviousLocation(request);
 
@@ -85,9 +86,12 @@ public class Firewall
 		//get the priority of user
 		//reduce priority and insert on queue
 		//verifyStrangeMessage(request);
+		System.out.println("Inserted request");
 		dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
 		synchronized(queue) {
+			System.out.println("Inserted on queue");
             queue.add(requestObject);
+            System.out.println("Was inserted successfully");
             log.info("Request added to queue");
             System.out.println("Queue size: " + queue.size());
             try{

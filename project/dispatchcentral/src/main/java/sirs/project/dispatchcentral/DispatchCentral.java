@@ -172,7 +172,6 @@ public class DispatchCentral{
                     synchronized(queue) {
                         RequestObject requestObject = queue.poll();
                         serveRequest(requestObject);
-                        //updatePriorities(1);
                         queue.notify();
                     }
                 }
@@ -296,12 +295,13 @@ public class DispatchCentral{
             ObjectOutputStream out = requestObject.getOut();
 
             String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+"Minutes."; 
-            System.out.println("Removed "+ request.getUserId()+" Priority: "+request.getPriority());
+            //System.out.println("Removed "+ request.getUserId()+" Priority: "+request.getPriority());
             try {
 				out.writeObject(message + "," + signAnswer(message));  
 				int rating = sendConfirmationRequest(request);
 				if(rating<6 && rating>-6){
 					System.out.println("Rating: " + rating);
+                    dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), rating);
 					//TODO: rate the user accordingly
 				}           
 			} catch (IOException e) {
