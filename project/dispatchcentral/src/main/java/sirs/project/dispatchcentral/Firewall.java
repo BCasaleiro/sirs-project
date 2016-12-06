@@ -64,7 +64,10 @@ public class Firewall
             queue.add(requestObject);
             System.out.println("Queue size: " + queue.size());
             try{
-              queue.wait();
+            	while(queue.size()!=0)
+            	{
+              		queue.wait();
+            	}
             }catch(InterruptedException e)
             {
               e.printStackTrace();

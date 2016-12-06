@@ -77,7 +77,7 @@ public class DispatchCentral{
     public static Comparator < RequestObject > comparator = new Comparator < RequestObject > () {@
         Override
         public int compare(RequestObject a, RequestObject b) {
-            return (int)(a.getRequest().getPriority() - b.getRequest().getPriority());
+            return (int)(b.getRequest().getPriority() - a.getRequest().getPriority());
         }
     };
 
@@ -135,7 +135,6 @@ public class DispatchCentral{
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
 
-            
             executorService.submit(new QueueRemover());
             
             while (true) {
@@ -168,7 +167,8 @@ public class DispatchCentral{
                     }
                 }
                 try {
-                    Thread.sleep(1000);
+                    System.out.println("Thread sleeping");
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
 
                 }
@@ -205,6 +205,7 @@ public class DispatchCentral{
         {
             int RADIUS_EARTH = 6371;
             int VELOCITY = 65;
+            //tecnico coordinates
             String coords = "38.7367117,-9.1380472";
             System.out.println("ClientCoords: " + clientCoords);
             String [] d1 = coords.split(",");
@@ -228,6 +229,7 @@ public class DispatchCentral{
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
             String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+"Minutes."; 
+            System.out.println("Removed "+ request.getUserId()+" Priority: "+request.getPriority());
             try {
 				out.writeObject(message + "," + signAnswer(message));  
 			} catch (IOException e) {
@@ -315,7 +317,6 @@ public class DispatchCentral{
             ) {
                 Request request = null;
                 if ((request = (Request)in.readObject()) != null) {
-                	request.setPriority(1000);
                     log.info("ID: " + request.getUserId());
                     log.info("Message: " + request.getMessage());
                     log.info("Signature: " + request.getSignature());
@@ -323,6 +324,10 @@ public class DispatchCentral{
                     
                     if(verifySignature(request)){
                     	//pass through the firewall filter
+                        System.out.println("Inserting user on Db");
+                        dbFunctions.insertUser(c, dbConstants.insertUser,  request.getUserId());
+                        int userRating = dbFunctions.userRating(c, dbConstants.userRating, request.getUserId());
+                        request.setPriority(userRating);
                         firewall.filterRequest(new RequestObject(request, out, in), queue);
                         log.info("Request added to queue");
 
