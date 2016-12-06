@@ -1,4 +1,4 @@
-package sirs.project.dispatchcentral;
+package sirs.project;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
