@@ -86,6 +86,8 @@
               <workingDirectory>/tmp</workingDirectory>
               <arguments>
                 <argument>9999</argument>
+                <argument>9997</argument>
+                <argument>localhost</argument>
               </arguments>
             </configuration>
         </plugin>

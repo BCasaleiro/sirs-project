@@ -25,9 +25,10 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.util.StringTokenizer;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -43,31 +44,41 @@ public class DispatchCentral{
 	 * Variables
 	 */
 	final static String PROJ_DIR = System.getProperty("user.dir");
-	final static String CA_IP = "localhost"; 
+	final static String CA_IP = "localhost";
 	final static String ALIAS = "dispatchcentral";
 	final static String KEYSTORE_PATH = PROJ_DIR + "/src/main/resources/dispatchcentralkeystore.jks";
+	private final static String TRUSTSTORE_PATH = PROJ_DIR + "/src/main/resources/cakeystore.jks";
+	private final static String CC_ALIAS = "confirmationcentral";
 	private final static char[] PASS = "changeit".toCharArray();
 	final static int CA_PORT = 9998;
-	
+
 	final Logger log = LoggerFactory.getLogger(DispatchCentral.class);
 
 	private static DispatchCentral server;
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+	private static SSLSocket sslconfirmationsocket = null;
 
     private Connection c = null;
     private DatabaseConstants dbConstants = null;
     private DatabaseFunctions dbFunctions = null;
 
     private static PriorityQueue < RequestObject > queue = null;
-    
+
     /*
      * Main method
      */
     public static void main(String[] args) throws IOException {
-
+		String serverName = args[2];
+		SSLSocketFactory factory=(SSLSocketFactory) SSLSocketFactory.getDefault();
         PropertyConfigurator.configure(PROJ_DIR + "/log4j.properties");
         server = new DispatchCentral();
         int port = Integer.parseInt(args[0]);
+		int confirmationPort =  Integer.parseInt(args[1]);
+
+        sslconfirmationsocket = (SSLSocket) factory.createSocket(serverName, confirmationPort);
+
+
         queue = new PriorityQueue < RequestObject > (comparator);
         server.checkConnectivity();
         server.runServer(port);
@@ -110,7 +121,6 @@ public class DispatchCentral{
         }
     }
 
-
     public int connectToDatabase() {
         try {
             Class.forName("org.postgresql.Driver");
@@ -131,11 +141,11 @@ public class DispatchCentral{
     private void runServer(int serverPort) {
         try {
             log.info("Starting Server in port " + serverPort);
-            
+
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
             executorService.submit(new QueueRemover());
-            
+
             while (true) {
                 try {
                 	SSLSocket sslsocket = (SSLSocket) sslServerSocket.accept();
@@ -172,7 +182,7 @@ public class DispatchCentral{
                 }
             }
         }
-        
+
         private String signAnswer(String message){
         	try {
     			byte[] b = message.getBytes("UTF-8");
@@ -186,7 +196,7 @@ public class DispatchCentral{
     			return null;
     		}
         }
-        
+
         private PrivateKey getPrivateKey(){
     		FileInputStream fIn = null;
     		try {
@@ -199,13 +209,73 @@ public class DispatchCentral{
     			return null;
     		}
     	}
-        
+
+		private boolean verifySignature(String message){
+			Certificate cert = getCertificate(TRUSTSTORE_PATH, CC_ALIAS);
+			PublicKey pk = cert.getPublicKey();
+			StringTokenizer strTok = new StringTokenizer(message, ",");
+			String answer = strTok.nextToken();
+			String signature = strTok.nextToken();
+	    	try {
+	    		byte[] signaturebytes = Base64.getDecoder().decode(signature);
+				byte[] messagebytes = answer.getBytes();
+				Signature sig = Signature.getInstance("SHA1WithRSA");
+				sig.initVerify(pk);
+				sig.update(messagebytes);
+				return sig.verify(signaturebytes);
+			} catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+
+		private Certificate getCertificate(String path, String alias){
+			FileInputStream fIn = null;
+			try {
+				fIn = new FileInputStream(path);
+				KeyStore keystore = KeyStore.getInstance("JKS");
+			    keystore.load(fIn, PASS);
+			    return keystore.getCertificate(alias);
+			} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+		private int sendConfirmationRequest(Request request) throws IOException{
+			 ObjectOutputStream out = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
+			 ObjectInputStream in = new ObjectInputStream(sslconfirmationsocket.getInputStream());
+			 String message = "Rate the request (-5 to 5) with id " + request.getId() + " from user " + request.getUserId() + ": " ;
+			 out.writeObject(message + "," + signAnswer(message));
+
+			String fromServer;
+			try {
+				fromServer = (String)in.readObject();
+				if(fromServer != null){
+					 if(verifySignature(fromServer)){
+						 System.out.println("[DEBUG] Message was from a trusted source");
+                         StringTokenizer strTok = new StringTokenizer(fromServer, ",");
+                         String answer = strTok.nextToken();
+						 return Integer.parseInt(answer);
+					 }
+				 }
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			return -10;
+		}
+
         public void serveRequest(RequestObject requestObject) {
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
-            String message = "Help is on the way";          
+            String message = "Help is on the way";
             try {
 				out.writeObject(message + "," + signAnswer(message));
+				int rating = sendConfirmationRequest(request);
+				if(rating<6 && rating>-6){
+					System.out.println("Rating: " + rating);
+					//TODO: rate the user accordingly
+				}           
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -216,9 +286,8 @@ public class DispatchCentral{
         //Needs testing
         public void updatePriorities(int value)
         {
-            if(queue.size()==0){ return; }
-            else{
-              
+            if(queue.size()==0) { return; }
+            else {
               RequestObject firstRequest = queue.poll();
               firstRequest.getRequest().updatePriority(value);
               queue.add(firstRequest);
@@ -229,10 +298,10 @@ public class DispatchCentral{
                   request.getRequest().updatePriority(value);
                   queue.add(request);
               }
-            }  
+            }
         }
     }
-    
+
     /*
      * Nested class to process the requests
      */
@@ -249,7 +318,7 @@ public class DispatchCentral{
             int id = dbFunctions.getRequestId(c, dbConstants.getRequestId, request);
             dbFunctions.setDispatched(c, dbConstants.setDispatched, id);
         }
-        
+
         private boolean verifySignature(Request request){
         	Certificate cert = getUserCertificate(request.getUserId());
         	PublicKey pk = cert.getPublicKey();
@@ -265,7 +334,7 @@ public class DispatchCentral{
 				return false;
 			}
         }
-        
+
         private Certificate getUserCertificate(String phoneNumber){
     		SSLSocketFactory factory=(SSLSocketFactory) SSLSocketFactory.getDefault();
     		try {
@@ -285,7 +354,7 @@ public class DispatchCentral{
 
             log.info("Started processing the request");
             try (
-            	ObjectOutputStream out = new ObjectOutputStream(sslsocket.getOutputStream()); 
+            	ObjectOutputStream out = new ObjectOutputStream(sslsocket.getOutputStream());
             	ObjectInputStream in = new ObjectInputStream(sslsocket.getInputStream());
             ) {
                 Request request = null;
@@ -295,7 +364,7 @@ public class DispatchCentral{
                     log.info("Message: " + request.getMessage());
                     log.info("Signature: " + request.getSignature());
                     log.info("Priority: " + request.getPriority());
-                    
+
                     if(verifySignature(request)){
                     	log.info("Request added to queue");
 
@@ -311,7 +380,7 @@ public class DispatchCentral{
                         }
                     }else{
                     	log.error("Invalid Signature!!");
-                    }                  
+                    }
                 }
             } catch (IOException | ClassNotFoundException e) {
                 log.error(e.getMessage());
