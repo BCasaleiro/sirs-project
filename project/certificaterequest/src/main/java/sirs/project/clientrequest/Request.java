@@ -16,19 +16,20 @@ public class Request implements Serializable{
     private int priority;
 
     //for database test
-    private String localization = "38.7367117,-9.1380472";
+    //private String localization = "38.7367117,-9.1380472";
+    private String localization;
 
     public Request() {
         this.date = new Date();
     }
 
     public Request(String id, String userId, String message) {
-    	this.id = id;
+        this.id = id;
         this.userId = userId;
         this.message = message;
         this.date = new Date();
 
-        //this.localization = generateLocalization();
+        this.localization = generateLocalization();
     }
 
     public String generateLocalization()
@@ -41,8 +42,8 @@ public class Request implements Serializable{
         -9.089389778673649,38.8025361282993
         */
         Random generator = new Random();
-        double longitude = 38.68659069069158 + (38.8025361282993 * generator.nextDouble());
-        double latitude = -9.241138435900211 + (-9.085956551134586 * generator.nextDouble());
+        double longitude = 38.686590690 + ((38.686590690-38.80253612) * generator.nextDouble());
+        double latitude = -9.2411384359 + ((-9.2411384359+9.0859565511) * generator.nextDouble());
         return (longitude + "," + latitude);
     }
 

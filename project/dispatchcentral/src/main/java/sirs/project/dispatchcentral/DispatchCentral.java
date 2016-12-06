@@ -201,34 +201,33 @@ public class DispatchCentral{
     			return null;
     		}
     	}
-        public int expectedTime(String dist1)
+        public int expectedTime(String clientCoords)
         {
             int RADIUS_EARTH = 6371;
-            int VELOCITY = 50;
-            String dist2 = "38.7367117,-9.1380472";
-
-            String [] d1 = dist1.split(",");
-            String [] d2 = dist2.split(",");
+            int VELOCITY = 65;
+            String coords = "38.7367117,-9.1380472";
+            System.out.println("ClientCoords: " + clientCoords);
+            String [] d1 = coords.split(",");
+            String [] d2 = clientCoords.split(",");
             
-            double latDistance = Math.toRadians(Double.parseDouble(d1[0]) - Double.parseDouble(d2[0]));
-            double lngDistance = Math.toRadians(Double.parseDouble(d2[0]) - Double.parseDouble(d2[1]));
+            double lngDistance = Math.toRadians(Double.parseDouble(d2[0]) - Double.parseDouble(d1[0]));
+            double latDistance = Math.toRadians(Double.parseDouble(d2[1]) - Double.parseDouble(d1[1]));
 
             double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-              + Math.cos(Math.toRadians(Double.parseDouble(d2[1]))) * Math.cos(Math.toRadians(Double.parseDouble(d2[1])))
+              + Math.cos(Math.toRadians(Double.parseDouble(d1[1]))) * Math.cos(Math.toRadians(Double.parseDouble(d2[1])))
               * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
 
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
             double distance = (double) (RADIUS_EARTH * c); 
-
-            return (int)Math.round(distance/VELOCITY);
+            System.out.println("Km: "+ distance + " time: "+(int)Math.round(distance*60/VELOCITY));
+            return (int)Math.round(distance*60/VELOCITY);
         }
 
         public void serveRequest(RequestObject requestObject) {
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
-            String message = "Help is on the way";          
-            System.out.println("Expected Time: " + expectedTime(request.getLocalization()));
+            String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+"Minutes."; 
             try {
 				out.writeObject(message + "," + signAnswer(message));  
 			} catch (IOException e) {
