@@ -135,7 +135,6 @@ public class DispatchCentral{
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
 
-            Firewall firewall = new Firewall(c);
             
             executorService.submit(new QueueRemover());
             
@@ -202,35 +201,36 @@ public class DispatchCentral{
     			return null;
     		}
     	}
-        public float expectedTime(String dist1, String dist2)
+        public int expectedTime(String dist1)
         {
-            RADIUS_EARTH = 6371;
-            VELOCITY = 50;
+            int RADIUS_EARTH = 6371;
+            int VELOCITY = 50;
+            String dist2 = "38.7367117,-9.1380472";
 
-            d1 = dist1.split(',');
-            d2 = dist2.split(',');
+            String [] d1 = dist1.split(",");
+            String [] d2 = dist2.split(",");
             
-            double latDistance = Math.toRadians((double)d1[0] - (double)d2[0]);
-            double lngDistance = Math.toRadians((double)d2[0] - (double)d2[1]);
+            double latDistance = Math.toRadians(Double.parseDouble(d1[0]) - Double.parseDouble(d2[0]));
+            double lngDistance = Math.toRadians(Double.parseDouble(d2[0]) - Double.parseDouble(d2[1]));
 
             double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-              + Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(venueLat))
+              + Math.cos(Math.toRadians(Double.parseDouble(d2[1]))) * Math.cos(Math.toRadians(Double.parseDouble(d2[1])))
               * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
 
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-            double distance = (double) (RADIUS_EARTH * c) 
+            double distance = (double) (RADIUS_EARTH * c); 
 
-            return Math.round(distance/VELOCITY);
-
+            return (int)Math.round(distance/VELOCITY);
         }
+
         public void serveRequest(RequestObject requestObject) {
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
             String message = "Help is on the way";          
-            System.out.println("Expected Time: ", expectedTime);
+            System.out.println("Expected Time: " + expectedTime(request.getLocalization()));
             try {
-				out.writeObject(message + "," + signAnswer(message));
+				out.writeObject(message + "," + signAnswer(message));  
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -265,6 +265,7 @@ public class DispatchCentral{
 
         private SSLSocket sslsocket;
 
+        private Firewall firewall = new Firewall(c);
         public ServiceRequest(SSLSocket connection) {
             this.sslsocket = connection;
         }

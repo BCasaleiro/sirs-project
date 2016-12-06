@@ -41,9 +41,9 @@ public class Request implements Serializable{
         -9.089389778673649,38.8025361282993
         */
         Random generator = new Random();
-        long longitude = generator.nextDouble(38.68659069069158)+38.8025361282993
-        long latitude = generator.nextDouble(-9.241138435900211)-9.085956551134586
-        this.localization = longitude + "," + latitude
+        double longitude = 38.68659069069158 + (38.8025361282993 * generator.nextDouble());
+        double latitude = -9.241138435900211 + (-9.085956551134586 * generator.nextDouble());
+        return (longitude + "," + latitude);
     }
 
     public void updatePriority(int value)

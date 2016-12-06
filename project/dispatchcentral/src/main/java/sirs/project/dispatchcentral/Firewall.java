@@ -3,7 +3,12 @@ package sirs.project.dispatchcentral;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.Date;
+import java.io.ObjectOutputStream;
+import java.util.PriorityQueue;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
+import sirs.project.clientrequest.Request;
 public class Firewall
 {
 	private Connection c = null;
@@ -21,6 +26,7 @@ public class Firewall
 	{
 		ObjectOutputStream out = requestObject.getOut();
 		Request request = requestObject.getRequest();
+
 		//verify if already exists
 		//dont serve it - Write to client
 		
@@ -29,13 +35,21 @@ public class Firewall
 
 		if(verifyIfExists(request) || verifyIfBlankNull(request))
 		{
-			out.write("Invalid Request");
+			try {
+				out.writeObject("Invalid Request");  
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		}
 
 		if(verifyDate(request.getDate())==false)
 		{
-			out.write("Bad Date Input");
+			try {
+				out.writeObject("Bad Date Input");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		}
 		//verify if the location is to random
@@ -47,8 +61,8 @@ public class Firewall
 		//verifyStrangeMessage(request);
 
 		synchronized(queue) {
-            queue.add(requestObject));
-            log.info("Queue size: " + queue.size());
+            queue.add(requestObject);
+            System.out.println("Queue size: " + queue.size());
             try{
               queue.wait();
             }catch(InterruptedException e)
