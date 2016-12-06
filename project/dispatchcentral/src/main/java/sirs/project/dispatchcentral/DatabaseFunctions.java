@@ -198,6 +198,30 @@ public final class DatabaseFunctions{
 		return -1;
 	}
 
+	public int lastRequestFromUser(Connection c, String command, String phoneNumber)
+	{
+		try{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, phoneNumber);
+			ResultSet result = ps.executeQuery();
+			if(resultEmpty(result))
+			{
+				//user can send a request
+				return 0;
+			}
+			else
+			{
+				//user sent a request in the last 20 seconds
+				return 1;
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+			return 1;
+		}
+	}
+
 	public static boolean resultEmpty(ResultSet rs) throws SQLException {
  	   return (!rs.isBeforeFirst() && rs.getRow() == 0);
 	}

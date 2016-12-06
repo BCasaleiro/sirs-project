@@ -34,4 +34,5 @@ public final class DatabaseConstants{
 
     String getRequestId = "SELECT ID FROM REQUESTS WHERE PHONENUMBER=? AND LOCALIZATION=? AND MESSAGE=? AND TIMESTAMP=?;";
 
+    String lastRequestFromUser = "SELECT TIMESTAMP FROM REQUESTS WHERE PHONENUMBER=? AND (TIMESTAMP+interval'20 seconds')<now();"; 
 }   

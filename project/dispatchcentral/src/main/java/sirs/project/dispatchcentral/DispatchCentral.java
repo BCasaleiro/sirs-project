@@ -269,10 +269,10 @@ public class DispatchCentral{
 		}
 
 		private int sendConfirmationRequest(Request request) throws IOException{
-			 ObjectOutputStream out = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
-			 ObjectInputStream in = new ObjectInputStream(sslconfirmationsocket.getInputStream());
-			 String message = "Rate the request (-5 to 5) with id " + request.getId() + " from user " + request.getUserId() + ": " ;
-			 out.writeObject(message + "," + signAnswer(message));
+    		 ObjectOutputStream out = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
+    		 ObjectInputStream in = new ObjectInputStream(sslconfirmationsocket.getInputStream());
+    		 String message = "Rate the request (-5 to 5) with id " + request.getId() + " from user " + request.getUserId() + ": " ;
+    		 out.writeObject(message + "," + signAnswer(message));
 
 			String fromServer;
 			try {
@@ -400,7 +400,6 @@ public class DispatchCentral{
                         int userRating = dbFunctions.userRating(c, dbConstants.userRating, request.getUserId());
                         request.setPriority(userRating);
                         firewall.filterRequest(new RequestObject(request, out, in), queue);
-                        //queue.add(new RequestObject(request, out, in));
 
                     }else{
                     	log.error("Invalid Signature!!");

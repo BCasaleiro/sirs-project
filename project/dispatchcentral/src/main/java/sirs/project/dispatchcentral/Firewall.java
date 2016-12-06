@@ -33,6 +33,22 @@ public class Firewall
 		ObjectOutputStream out = requestObject.getOut();
 		Request request = requestObject.getRequest();
 
+		//check if user sent a request in the last 20 seconds
+		
+		if(dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId())==1)
+		{
+			try{
+				out.writeObject("Trying to be abusive?");
+				//dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), -1);
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+			return;
+		}
+		
+
 		//verify if already exists
 		//dont serve it - Write to client
 		
@@ -69,7 +85,7 @@ public class Firewall
 		//get the priority of user
 		//reduce priority and insert on queue
 		//verifyStrangeMessage(request);
-
+		dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
 		synchronized(queue) {
             queue.add(requestObject);
             log.info("Request added to queue");
