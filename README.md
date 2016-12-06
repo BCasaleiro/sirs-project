@@ -10,6 +10,8 @@ João Godinho, 87830, joaogodinho_4@hotmail.com
 
 ## Instruções de execução
 
+Executar o **postgres**!
+
 Para correr o projeto é necessário ir até à diretoria onde está o ficheiro **pom.xml**.
 
 Primeiro iniciar o **Certificate Authority** com o seguinte comando:
