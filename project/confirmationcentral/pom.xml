@@ -1,20 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>sirs.project</groupId>
-  <artifactId>dispatchcentral</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <artifactId>confirmationcentral</artifactId>
   <packaging>jar</packaging>
-
-  <name>dispatchcentral</name>
+  <version>1.0-SNAPSHOT</version>
+  <name>confirmationcentral</name>
   <url>http://maven.apache.org</url>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <slf4jVersion>1.7.21</slf4jVersion>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -22,39 +14,7 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    
-    <dependency>
-    	<groupId>sirs.project</groupId>
-    	<artifactId>certificaterequest</artifactId>
-    	<version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>9.1-901-1.jdbc4</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf4jVersion}</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4jVersion}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-    </dependency>
   </dependencies>
-
   <build>
     <pluginManagement>
       <plugins>
@@ -81,17 +41,16 @@
               </execution>
             </executions>
             <configuration>
-              <mainClass>sirs.project.dispatchcentral.DispatchCentral</mainClass>
+              <mainClass>sirs.project.ConfirmationCentral</mainClass>
               <!-- optional -->
               <workingDirectory>/tmp</workingDirectory>
               <arguments>
-                <argument>9999</argument>
                 <argument>9997</argument>
-                <argument>localhost</argument>
               </arguments>
             </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
   </build>
+
 </project>
