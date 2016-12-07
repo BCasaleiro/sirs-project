@@ -10,8 +10,8 @@ public final class DatabaseFunctions{
 
 	DatabaseConstants dbConstants = null;
 
-	public DatabaseFunctions(DatabaseConstants constants){
-		dbConstants = constants;
+	public DatabaseFunctions(){
+		this.dbConstants = new DatabaseConstants();
 	}
 	public void createTable(Connection c, String command)
 	{
@@ -75,7 +75,7 @@ public final class DatabaseFunctions{
 
 	public void insertRequest(Connection c, String command, Request request)
 	{
-		if(requestExists(c, dbConstants.userExists ,request))
+		if(requestExists(c,dbConstants.requestExists ,request))
 		{
 			System.out.println("Request already exists");
 			return;
@@ -196,6 +196,32 @@ public final class DatabaseFunctions{
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	public int lastRequestFromUser(Connection c, String command, String phoneNumber)
+	{
+		try{
+			PreparedStatement ps = c.prepareStatement(command);
+			ps.setString(1, phoneNumber);
+			ResultSet result = ps.executeQuery();
+			if(resultEmpty(result))
+			{
+				//user can send a request
+				System.out.println("Result Empty");
+				return 0;
+			}
+			else
+			{
+				//user sent a request in the last 20 seconds
+				System.out.println("Result Has something");
+				return 1;
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+			return 1;
+		}
 	}
 
 	public static boolean resultEmpty(ResultSet rs) throws SQLException {
