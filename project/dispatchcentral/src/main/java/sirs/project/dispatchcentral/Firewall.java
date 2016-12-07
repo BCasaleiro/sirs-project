@@ -82,7 +82,7 @@ public class Firewall
 
 	public boolean verifyIfBlockedUser(Request request)
 	{
-		if(request.getPriority()<100)
+		if(request.getPriority() < 5)
 		{
 			return true;
 		}

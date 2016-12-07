@@ -104,16 +104,6 @@ public class DispatchCentral{
     public void createNecessaryTables() {
         dbFunctions.createTable(c, dbConstants.requestsTableCreation);
         dbFunctions.createTable(c, dbConstants.ratingsTableCreation);
-
-        //Just for test
-        //dbTestingFunction();
-    }
-
-    public void dbTestingFunction() {
-        dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
-        dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
-        System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
-        System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
     }
 
     public void checkConnectivity() {
@@ -317,25 +307,6 @@ public class DispatchCentral{
 				e.printStackTrace();
 			}
             log.info("Removed "+ request.getUserId()+"Priority: "+request.getPriority());
-            //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
-        }
-
-        //Needs testing
-        public void updatePriorities(int value)
-        {
-            if(queue.size()==0) { return; }
-            else {
-              RequestObject firstRequest = queue.poll();
-              firstRequest.getRequest().updatePriority(value);
-              queue.add(firstRequest);
-
-              RequestObject request = null;
-              while((request = queue.poll())!=firstRequest)
-              {
-                  request.getRequest().updatePriority(value);
-                  queue.add(request);
-              }
-            }
         }
     }
 
@@ -441,7 +412,7 @@ public class DispatchCentral{
                         */
                         
                         //Check if date input is bad
-                        rObject.getRequest().setDate(new Date(2018, 1, 1, 1, 1));
+                        //rObject.getRequest().setDate(new Date(2018, 1, 1, 1, 1));
                         
                         int firewallReturn = firewall.filterRequest(rObject); 
                          
