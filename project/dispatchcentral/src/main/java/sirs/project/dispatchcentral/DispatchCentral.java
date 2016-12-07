@@ -1,6 +1,7 @@
 package sirs.project.dispatchcentral;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -58,7 +59,9 @@ public class DispatchCentral{
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
 	private static SSLSocket sslconfirmationsocket = null;
-
+	private static ObjectOutputStream out_cc;
+	private static ObjectInputStream in_cc;
+	
     private Connection c = null;
     private DatabaseConstants dbConstants = null;
     private DatabaseFunctions dbFunctions = null;
@@ -77,7 +80,8 @@ public class DispatchCentral{
 		int confirmationPort =  Integer.parseInt(args[1]);
 
         sslconfirmationsocket = (SSLSocket) factory.createSocket(serverName, confirmationPort);
-
+        out_cc = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
+		in_cc = new ObjectInputStream(sslconfirmationsocket.getInputStream());
 
         queue = new PriorityQueue < RequestObject > (comparator);
         server.checkConnectivity();
@@ -268,26 +272,28 @@ public class DispatchCentral{
 		}
 
 		private int sendConfirmationRequest(Request request) throws IOException{
-    		 ObjectOutputStream out = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
-    		 ObjectInputStream in = new ObjectInputStream(sslconfirmationsocket.getInputStream());
-    		 String message = "Rate the request (-5 to 5) with id " + request.getId() + " from user " + request.getUserId() + ": " ;
-    		 out.writeObject(message + "," + signAnswer(message));
-
-			String fromServer;
-			try {
-				fromServer = (String)in.readObject();
-				if(fromServer != null){
-					 if(verifySignature(fromServer)){
-						 System.out.println("[DEBUG] Message was from a trusted source");
-                         StringTokenizer strTok = new StringTokenizer(fromServer, ",");
-                         String answer = strTok.nextToken();
-						 return Integer.parseInt(answer);
+			try{
+				String message = "Rate the request (-5 to 5) with id " + request.getId() + " from user " + request.getUserId() + ": " ;
+				out_cc.writeObject(message + "," + signAnswer(message));				
+				String fromServer;
+				try {
+					fromServer = (String)in_cc.readObject();
+					if(fromServer != null){
+						 if(verifySignature(fromServer)){
+							 System.out.println("[DEBUG] Message was from a trusted source");
+							 StringTokenizer strTok = new StringTokenizer(fromServer, ",");
+				             String answer = strTok.nextToken();
+							 return Integer.parseInt(answer);
+						 }
 					 }
-				 }
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+				return -10;
+			}catch(EOFException e){
+				return -10;
 			}
-			return -10;
+			 
 		}
 
         public void serveRequest(RequestObject requestObject) {

@@ -1,37 +1,31 @@
 package sirs.project;
 
-import java.net.Socket;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
-
-import java.io.PrintWriter;
-import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
-import java.util.Base64;
-import java.util.Scanner;
-import java.util.StringTokenizer;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
-import java.security.KeyStoreException;
 import java.security.SignatureException;
-import java.security.InvalidKeyException;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
+import java.util.Base64;
+import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 public class ConfirmationCentral {
 
@@ -59,15 +53,13 @@ public class ConfirmationCentral {
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
 
-            while (true) {
-                try {
-                	SSLSocket sslsocket = (SSLSocket) sslServerSocket.accept();
-                    System.out.println("Connection accepted from " + sslsocket.getInetAddress().getHostAddress());
-                    executorService.submit(new ServiceRequest(sslsocket));
-                } catch(IOException ioe) {
-                    System.out.println("Error accepting connection");
-                    System.out.println(ioe.getMessage());
-                }
+            try {
+            	SSLSocket sslsocket = (SSLSocket) sslServerSocket.accept();
+                System.out.println("Connection accepted from " + sslsocket.getInetAddress().getHostAddress());
+                executorService.submit(new ServiceRequest(sslsocket));
+            } catch(IOException ioe) {
+                System.out.println("Error accepting connection");
+                System.out.println(ioe.getMessage());
             }
         } catch (IOException e) {
             System.out.println("Error starting Server on port " + serverPort);
@@ -78,9 +70,17 @@ public class ConfirmationCentral {
     class ServiceRequest implements Runnable {
 
         private SSLSocket sslsocket;
-
+        private ObjectOutputStream out;
+        private ObjectInputStream in;
+        
         public ServiceRequest(SSLSocket connection) {
             this.sslsocket = connection;
+            try {
+				out = new ObjectOutputStream(sslsocket.getOutputStream());
+	            in = new ObjectInputStream(sslsocket.getInputStream());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
         }
 
         private String signAnswer(String message){
@@ -145,32 +145,26 @@ public class ConfirmationCentral {
         public void run() {
 
             System.out.println("Started processing the request");
-            try (
-                ObjectOutputStream out = new ObjectOutputStream(sslsocket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(sslsocket.getInputStream());
-            ) {
-                String message = null;
-                if ((message = (String)in.readObject()) != null) {
-                	if(verifySignature(message)){
-                        StringTokenizer strTok = new StringTokenizer(message, ",");
-                        String tok = strTok.nextToken();
-                        System.out.println(tok);
-
-                        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                        String answer = br.readLine();
-                        /*Scanner scan = new Scanner(System.in);
-                        String s = scan.next();
-                        int i = scan.nextInt();
-
-                        String answer = i + "";*/
-                        System.out.println("[DEBUG] Recorded answer: " + answer);
-                        out.writeObject(answer + "," + signAnswer(answer));
-                    }else{
-                    	System.out.println("Invalid Signature!!");
-                    }
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                System.out.println(e.getMessage());
+            while(true){
+            try{
+	            String message = null;
+	            if ((message = (String)in.readObject()) != null) {
+	            	if(verifySignature(message)){
+	                    StringTokenizer strTok = new StringTokenizer(message, ",");
+	                    String tok = strTok.nextToken();
+	                    System.out.println(tok);
+	
+	                    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	                    String answer = br.readLine();
+	
+	                    System.out.println("[DEBUG] Recorded answer: " + answer);
+	                    out.writeObject(answer + "," + signAnswer(answer));
+	                }else{
+	                	System.out.println("Invalid Signature!!");
+	                }
+	            }
+            } catch(IOException | ClassNotFoundException e){
+            }
             }
         }
     }
