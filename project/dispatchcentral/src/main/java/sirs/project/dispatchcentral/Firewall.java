@@ -46,7 +46,6 @@ public class Firewall
 			dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), -1);
 			return -1;
 		}
-		
 
 		//verify if already exists
 		//dont serve it - Write to client
@@ -67,14 +66,6 @@ public class Firewall
 			return -5;
 		}
 		
-		
-		//verify if the location is to random
-		//verifyPreviousLocation(request);
-
-		//verify if there's something strange in the message
-		//get the priority of user
-		//reduce priority and insert on queue
-		//verifyStrangeMessage(request);
 		
         return 0;
 
