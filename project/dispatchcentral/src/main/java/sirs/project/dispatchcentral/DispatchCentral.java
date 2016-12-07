@@ -167,6 +167,33 @@ public class DispatchCentral{
         }
     }
 
+    public String signAnswer(String message){
+            try {
+                byte[] b = message.getBytes("UTF-8");
+                Signature sig = Signature.getInstance("SHA1WithRSA");
+                sig.initSign(getPrivateKey());
+                sig.update(b);
+                byte[] signatureBytes = sig.sign();
+                return Base64.getEncoder().encodeToString(signatureBytes);
+            } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+    private PrivateKey getPrivateKey(){
+        FileInputStream fIn = null;
+        try {
+            fIn = new FileInputStream(KEYSTORE_PATH);
+            KeyStore keystore = KeyStore.getInstance("JKS");
+            keystore.load(fIn, PASS);
+            return (PrivateKey)keystore.getKey(ALIAS, PASS);
+        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     class QueueRemover implements Runnable {
         public QueueRemover() {}
 
@@ -188,32 +215,7 @@ public class DispatchCentral{
             }
         }
 
-        private String signAnswer(String message){
-        	try {
-    			byte[] b = message.getBytes("UTF-8");
-    			Signature sig = Signature.getInstance("SHA1WithRSA");
-    			sig.initSign(getPrivateKey());
-    			sig.update(b);
-    			byte[] signatureBytes = sig.sign();
-    			return Base64.getEncoder().encodeToString(signatureBytes);
-    		} catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-    			e.printStackTrace();
-    			return null;
-    		}
-        }
 
-        private PrivateKey getPrivateKey(){
-    		FileInputStream fIn = null;
-    		try {
-    			fIn = new FileInputStream(KEYSTORE_PATH);
-    			KeyStore keystore = KeyStore.getInstance("JKS");
-    		    keystore.load(fIn, PASS);
-    		    return (PrivateKey)keystore.getKey(ALIAS, PASS);
-    		} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
-    			e.printStackTrace();
-    			return null;
-    		}
-    	}
 
         public int expectedTime(String clientCoords)
         {
@@ -384,7 +386,28 @@ public class DispatchCentral{
             	return null;
             }
         }
+        public void insertRequestQueue(RequestObject requestObject)
+        {
+            Request request = requestObject.getRequest();
+            dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
 
+            synchronized(queue) {
+                System.out.println("Inserted on queue");
+                queue.add(requestObject);
+                System.out.println("Was inserted successfully");
+                log.info("Request added to queue");
+                System.out.println("Queue size: " + queue.size());
+                try{
+                    while(queue.size()!=0)
+                    {
+                        queue.wait();
+                    }
+                }catch(InterruptedException e)
+                {
+                  e.printStackTrace();
+                }
+             }
+        }
         public void run() {
 
             log.info("Started processing the request");
@@ -405,7 +428,23 @@ public class DispatchCentral{
                         dbFunctions.insertUser(c, dbConstants.insertUser,  request.getUserId());
                         int userRating = dbFunctions.userRating(c, dbConstants.userRating, request.getUserId());
                         request.setPriority(userRating);
-                        firewall.filterRequest(new RequestObject(request, out, in), queue);
+                        RequestObject rObject = new RequestObject(request, out, in);
+
+                        int firewallReturn = firewall.filterRequest(rObject); 
+                        if(firewallReturn == 0)
+                        {
+                            insertRequestQueue(rObject);
+                        }
+                        else
+                        {
+                            String message = null;
+                            if(firewallReturn==-1)
+                            {
+                                message = "Trying to be abusive?";
+                            }
+                            out.writeObject(message+","+signAnswer(message));
+                        }
+                        
 
                     }else{
                     	log.error("Invalid Signature!!");
