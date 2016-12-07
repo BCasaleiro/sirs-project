@@ -37,6 +37,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
+
 import sirs.project.clientrequest.Request;
 
 public class DispatchCentral{
@@ -310,7 +312,6 @@ public class DispatchCentral{
 				if(rating<6 && rating>-6){
 					System.out.println("Rating: " + rating);
                     dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), rating);
-					//TODO: rate the user accordingly
 				}           
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -430,22 +431,65 @@ public class DispatchCentral{
                         request.setPriority(userRating);
                         RequestObject rObject = new RequestObject(request, out, in);
 
+
+                        //Test if it comes blank or empty
+                        /*
+                        rObject.getRequest().setUserId(" ");
+                        rObject.getRequest().setId("");
+                        rObject.getRequest().setMessage("   ");
+                        rObject.getRequest().setPriority(30);
+                        */
+                        
+                        //Check if date input is bad
+                        rObject.getRequest().setDate(new Date(2018, 1, 1, 1, 1));
+                        
                         int firewallReturn = firewall.filterRequest(rObject); 
+                         
                         if(firewallReturn == 0)
                         {
                             insertRequestQueue(rObject);
+
+                            //checking an abusive attack where the user duplicates the request:
+                            /*
+                            int duplicate = firewall.filterRequest(rObject);
+                            System.out.println("Duplicate: " + duplicate);
+                            */
                         }
                         else
                         {
                             String message = null;
+
                             if(firewallReturn==-1)
                             {
-                                message = "Trying to be abusive?";
+                                //Last request too soon
+                                message = "Try again later";
+                                log.info("Firewall Returned -1");
                             }
+                            if(firewallReturn==-2)
+                            {   
+                                //Duplicated request
+                                message = "Duplicated request";
+                                log.info("Firewall Returned -2");
+                            }
+                            if(firewallReturn==-3)
+                            {
+                                //blank
+                                message = "Invalid Request";
+                                log.info("Firewall Returned -3");
+                            }  
+                            if(firewallReturn==-4)
+                            {
+                                message = "You are blocked by the server";
+                                log.info("Firewall Returned -4");
+                            }
+                            if(firewallReturn==-5)
+                            {
+                                message = "Bad date input";
+                                log.info("Firewall Returned -5");
+                            }
+
                             out.writeObject(message+","+signAnswer(message));
                         }
-                        
-
                     }else{
                     	log.error("Invalid Signature!!");
                     }

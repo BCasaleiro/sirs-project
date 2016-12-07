@@ -33,7 +33,11 @@ public class Firewall
 
 		Request request = requestObject.getRequest();
 
-		
+		if(verifyIfBlockedUser(request))
+		{
+			return -4;
+		}
+
 		//check if user sent a request in the last 20 seconds
 		System.out.println("Last Request From User: " +dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId()));
 		if(dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId())==1)
@@ -46,33 +50,24 @@ public class Firewall
 
 		//verify if already exists
 		//dont serve it - Write to client
-		
+		if(verifyIfExists(request))
+		{
+			return -2;
+		} 
 		//verify if something is blank
 		//dont serve it - Write to client
-		/*
-		if(verifyIfExists(request) || verifyIfBlankNull(request))
+		
+		if(verifyIfBlankNull(request))
 		{
-			try {
-				out.writeObject("Invalid Request");  
-				log.info("Invalid request");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return;
+			return -3;
 		}
-		*/
-		/*
+
 		if(verifyDate(request.getDate())==false)
 		{
-			try {
-				out.writeObject("Bad Date Input");
-				log.info("Bad date input");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return;
+			return -5;
 		}
-		*/
+		
+		
 		//verify if the location is to random
 		//verifyPreviousLocation(request);
 
@@ -85,6 +80,15 @@ public class Firewall
 
 	}
 
+	public boolean verifyIfBlockedUser(Request request)
+	{
+		if(request.getPriority()<100)
+		{
+			return true;
+		}
+		return false;
+	}
+
 	public boolean verifyIfExists(Request request)
 	{
 		return dbFunctions.requestExists(c, dbConstants.requestExists, request);
@@ -93,26 +97,26 @@ public class Firewall
 
 	public boolean verifyIfBlankNull(Request request)
 	{
-		if(request.getId()==null || request.getId().isEmpty())
+		if(request.getId()==null || request.getId().isEmpty() || request.getId().trim().length()==0)
 		{
 			return true;
 		}
-		if(request.getUserId()==null || request.getUserId().isEmpty())
+		
+		if(request.getUserId()==null || request.getUserId().isEmpty() || request.getUserId().trim().length()==0)
 		{
 			return true;
 		}
+		
 		if(request.getDate()==null)
 		{
 			return true;
 		}
-		if(request.getMessage().isEmpty() || request.getMessage()==null)
+
+		if(request.getMessage()==null || request.getMessage().isEmpty() || request.getMessage().trim().length()==0)
 		{
 			return true;
 		}
-		if(request.getPriority()<100)
-		{
-			return true;
-		}
+		
 		return false;
 	}
 
