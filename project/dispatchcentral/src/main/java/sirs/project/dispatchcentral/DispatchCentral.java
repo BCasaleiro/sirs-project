@@ -1,6 +1,7 @@
 package sirs.project.dispatchcentral;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -58,7 +59,9 @@ public class DispatchCentral{
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
 	private static SSLSocket sslconfirmationsocket = null;
-
+	private static ObjectOutputStream out_cc;
+	private static ObjectInputStream in_cc;
+	
     private Connection c = null;
     private DatabaseConstants dbConstants = null;
     private DatabaseFunctions dbFunctions = null;
@@ -77,7 +80,8 @@ public class DispatchCentral{
 		int confirmationPort =  Integer.parseInt(args[1]);
 
         sslconfirmationsocket = (SSLSocket) factory.createSocket(serverName, confirmationPort);
-
+        out_cc = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
+		in_cc = new ObjectInputStream(sslconfirmationsocket.getInputStream());
 
         queue = new PriorityQueue < RequestObject > (comparator);
         server.checkConnectivity();
@@ -88,7 +92,7 @@ public class DispatchCentral{
     public static Comparator < RequestObject > comparator = new Comparator < RequestObject > () {@
         Override
         public int compare(RequestObject a, RequestObject b) {
-            return (int)(a.getRequest().getPriority() - b.getRequest().getPriority());
+            return (int)(b.getRequest().getPriority() - a.getRequest().getPriority());
         }
     };
 
@@ -113,7 +117,7 @@ public class DispatchCentral{
     public void checkConnectivity() {
         dbConstants = new DatabaseConstants();
         if (connectToDatabase() == 1) {
-            dbFunctions = new DatabaseFunctions(dbConstants);
+            dbFunctions = new DatabaseFunctions();
             createNecessaryTables();
             System.out.println("Created necessary tables");
         } else {
@@ -144,6 +148,7 @@ public class DispatchCentral{
 
             SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             SSLServerSocket sslServerSocket=(SSLServerSocket) factory.createServerSocket(serverPort);
+
             executorService.submit(new QueueRemover());
 
             while (true) {
@@ -171,12 +176,12 @@ public class DispatchCentral{
                     synchronized(queue) {
                         RequestObject requestObject = queue.poll();
                         serveRequest(requestObject);
-                        //updatePriorities(1);
                         queue.notify();
                     }
                 }
                 try {
-                    Thread.sleep(1000);
+                    System.out.println("Thread sleeping");
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
 
                 }
@@ -209,6 +214,30 @@ public class DispatchCentral{
     			return null;
     		}
     	}
+
+        public int expectedTime(String clientCoords)
+        {
+            int RADIUS_EARTH = 6371;
+            int VELOCITY = 65;
+            //tecnico coordinates
+            String coords = "38.7367117,-9.1380472";
+            System.out.println("ClientCoords: " + clientCoords);
+            String [] d1 = coords.split(",");
+            String [] d2 = clientCoords.split(",");
+            
+            double lngDistance = Math.toRadians(Double.parseDouble(d2[0]) - Double.parseDouble(d1[0]));
+            double latDistance = Math.toRadians(Double.parseDouble(d2[1]) - Double.parseDouble(d1[1]));
+
+            double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+              + Math.cos(Math.toRadians(Double.parseDouble(d1[1]))) * Math.cos(Math.toRadians(Double.parseDouble(d2[1])))
+              * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
+
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            double distance = (double) (RADIUS_EARTH * c); 
+            System.out.println("Km: "+ distance + " time: "+(int)Math.round(distance*60/VELOCITY));
+            return (int)Math.round(distance*60/VELOCITY);
+        }
 
 		private boolean verifySignature(String message){
 			Certificate cert = getCertificate(TRUSTSTORE_PATH, CC_ALIAS);
@@ -243,37 +272,42 @@ public class DispatchCentral{
 		}
 
 		private int sendConfirmationRequest(Request request) throws IOException{
-			 ObjectOutputStream out = new ObjectOutputStream(sslconfirmationsocket.getOutputStream());
-			 ObjectInputStream in = new ObjectInputStream(sslconfirmationsocket.getInputStream());
-			 String message = "Rate the request (-5 to 5) with id " + request.getId() + " from user " + request.getUserId() + ": " ;
-			 out.writeObject(message + "," + signAnswer(message));
-
-			String fromServer;
-			try {
-				fromServer = (String)in.readObject();
-				if(fromServer != null){
-					 if(verifySignature(fromServer)){
-						 System.out.println("[DEBUG] Message was from a trusted source");
-                         StringTokenizer strTok = new StringTokenizer(fromServer, ",");
-                         String answer = strTok.nextToken();
-						 return Integer.parseInt(answer);
+			try{
+				String message = "Rate the request (-5 to 5) with id " + request.getId() + " from user " + request.getUserId() + ": " ;
+				out_cc.writeObject(message + "," + signAnswer(message));				
+				String fromServer;
+				try {
+					fromServer = (String)in_cc.readObject();
+					if(fromServer != null){
+						 if(verifySignature(fromServer)){
+							 System.out.println("[DEBUG] Message was from a trusted source");
+							 StringTokenizer strTok = new StringTokenizer(fromServer, ",");
+				             String answer = strTok.nextToken();
+							 return Integer.parseInt(answer);
+						 }
 					 }
-				 }
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+				return -10;
+			}catch(EOFException e){
+				return -10;
 			}
-			return -10;
+			 
 		}
 
         public void serveRequest(RequestObject requestObject) {
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
-            String message = "Help is on the way";
+
+            String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+"Minutes."; 
+            //System.out.println("Removed "+ request.getUserId()+" Priority: "+request.getPriority());
             try {
-				out.writeObject(message + "," + signAnswer(message));
+				out.writeObject(message + "," + signAnswer(message));  
 				int rating = sendConfirmationRequest(request);
 				if(rating<6 && rating>-6){
 					System.out.println("Rating: " + rating);
+                    dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), rating);
 					//TODO: rate the user accordingly
 				}           
 			} catch (IOException e) {
@@ -309,6 +343,7 @@ public class DispatchCentral{
 
         private SSLSocket sslsocket;
 
+        private Firewall firewall = new Firewall(c, log);
         public ServiceRequest(SSLSocket connection) {
             this.sslsocket = connection;
         }
@@ -359,25 +394,19 @@ public class DispatchCentral{
             ) {
                 Request request = null;
                 if ((request = (Request)in.readObject()) != null) {
-                	request.setPriority(1000);
                     log.info("ID: " + request.getUserId());
                     log.info("Message: " + request.getMessage());
                     log.info("Signature: " + request.getSignature());
                     log.info("Priority: " + request.getPriority());
 
                     if(verifySignature(request)){
-                    	log.info("Request added to queue");
+                    	//pass through the firewall filter
+                        System.out.println("Inserting user on Db");
+                        dbFunctions.insertUser(c, dbConstants.insertUser,  request.getUserId());
+                        int userRating = dbFunctions.userRating(c, dbConstants.userRating, request.getUserId());
+                        request.setPriority(userRating);
+                        firewall.filterRequest(new RequestObject(request, out, in), queue);
 
-                        synchronized(queue) {
-                            queue.add(new RequestObject(request, out, in ));
-                            log.info("Queue size: " + queue.size());
-                            try{
-                              queue.wait();
-                            }catch(InterruptedException e)
-                            {
-                              e.printStackTrace();
-                            }
-                        }
                     }else{
                     	log.error("Invalid Signature!!");
                     }

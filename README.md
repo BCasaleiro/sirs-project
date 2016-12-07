@@ -10,18 +10,20 @@ João Godinho, 87830, joaogodinho_4@hotmail.com
 
 ## Instruções de execução
 
-Os comandos mvn executam-se sempre onde está o ficheiro **pom.xml**.
+Executar o **postgres**!
 
-Compilar e instalar a dependência do **CertificateRequest**:
-
-```
-mvn clean install
-```
+Para correr o projeto é necessário ir até à diretoria onde está o ficheiro **pom.xml**.
 
 Primeiro iniciar o **Certificate Authority** com o seguinte comando:
 
 ```
 mvn -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.keyStore=src/main/resources/cakeystore.jks -Djavax.net.ssl.trustStore=src/main/resources/cakeystore.jks -Djavax.net.debug=ssl -Djavax.net.ssl.keyStorePassword=changeit -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java
+```
+
+De seguida executar o **Confirmation Central** com o comando:
+
+```
+mvn -Djavax.net.ssl.keyStoreType=jks -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.keyStore=src/main/resources/confirmationcentralkeystore.jks -Djavax.net.ssl.trustStore=src/main/resources/cakeystore.jks -Djavax.net.debug=ssl -Djavax.net.ssl.keyStorePassword=changeit -Djavax.net.ssl.trustStorePassword=changeit clean install exec:java
 ```
 
 De seguida executar o **Dispatch Central** com o comando:
