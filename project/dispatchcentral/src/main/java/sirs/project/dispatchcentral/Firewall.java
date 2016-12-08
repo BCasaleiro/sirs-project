@@ -28,57 +28,46 @@ public class Firewall
 		
 	}
 
-	public void filterRequest(RequestObject requestObject, PriorityQueue queue)
+	public int filterRequest(RequestObject requestObject)
 	{
-		ObjectOutputStream out = requestObject.getOut();
+
 		Request request = requestObject.getRequest();
 
-		/*
+		if(verifyIfBlockedUser(request))
+		{
+			return -4;
+		}
+
 		//check if user sent a request in the last 20 seconds
 		System.out.println("Last Request From User: " +dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId()));
 		if(dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId())==1)
 		{
-			try{
-				out.writeObject("Trying to be abusive?");
-				//dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), -1);
-			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
-			return;
+			
+			dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), -1);
+			return -1;
 		}
-		*/
+		
 
 		//verify if already exists
 		//dont serve it - Write to client
-		
+		if(verifyIfExists(request))
+		{
+			return -2;
+		} 
 		//verify if something is blank
 		//dont serve it - Write to client
-		/*
-		if(verifyIfExists(request) || verifyIfBlankNull(request))
+		
+		if(verifyIfBlankNull(request))
 		{
-			try {
-				out.writeObject("Invalid Request");  
-				log.info("Invalid request");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return;
+			return -3;
 		}
-		*/
-		/*
+
 		if(verifyDate(request.getDate())==false)
 		{
-			try {
-				out.writeObject("Bad Date Input");
-				log.info("Bad date input");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return;
+			return -5;
 		}
-		*/
+		
+		
 		//verify if the location is to random
 		//verifyPreviousLocation(request);
 
@@ -86,25 +75,18 @@ public class Firewall
 		//get the priority of user
 		//reduce priority and insert on queue
 		//verifyStrangeMessage(request);
-		System.out.println("Inserted request");
-		dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
-		synchronized(queue) {
-			System.out.println("Inserted on queue");
-            queue.add(requestObject);
-            System.out.println("Was inserted successfully");
-            log.info("Request added to queue");
-            System.out.println("Queue size: " + queue.size());
-            try{
-            	while(queue.size()!=0)
-            	{
-              		queue.wait();
-            	}
-            }catch(InterruptedException e)
-            {
-              e.printStackTrace();
-            }
-        }
+		
+        return 0;
 
+	}
+
+	public boolean verifyIfBlockedUser(Request request)
+	{
+		if(request.getPriority() < 5)
+		{
+			return true;
+		}
+		return false;
 	}
 
 	public boolean verifyIfExists(Request request)
@@ -115,26 +97,26 @@ public class Firewall
 
 	public boolean verifyIfBlankNull(Request request)
 	{
-		if(request.getId()==null || request.getId().isEmpty())
+		if(request.getId()==null || request.getId().isEmpty() || request.getId().trim().length()==0)
 		{
 			return true;
 		}
-		if(request.getUserId()==null || request.getUserId().isEmpty())
+		
+		if(request.getUserId()==null || request.getUserId().isEmpty() || request.getUserId().trim().length()==0)
 		{
 			return true;
 		}
+		
 		if(request.getDate()==null)
 		{
 			return true;
 		}
-		if(request.getMessage().isEmpty() || request.getMessage()==null)
+
+		if(request.getMessage()==null || request.getMessage().isEmpty() || request.getMessage().trim().length()==0)
 		{
 			return true;
 		}
-		if(request.getPriority()<100)
-		{
-			return true;
-		}
+		
 		return false;
 	}
 
