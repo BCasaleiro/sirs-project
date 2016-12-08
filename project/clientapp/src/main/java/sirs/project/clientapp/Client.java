@@ -113,11 +113,16 @@ public class Client{
 
 	
 	private void sendRequest() throws IOException{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		 ObjectOutputStream out = new ObjectOutputStream(ssldispatchsocket.getOutputStream());
 		 ObjectInputStream in = new ObjectInputStream(ssldispatchsocket.getInputStream());
 		 String id = hashText(phoneNumber + (new Date()).getTime());
-		 Request request = new Request(id, phoneNumber, "HELP!");
-		 String message = id + "," +  phoneNumber + ",HELP!";
+
+		 System.out.println("Emergency: ");
+		 String emergM = br.readLine();
+		 
+		 Request request = new Request(id, phoneNumber, emergM);
+		 String message = id + "," +  phoneNumber + ","+emergM;
 		 request.setSignature(signRequest(message));
 		 if(request.getSignature() != null){
 			 out.writeObject(request);
@@ -196,11 +201,11 @@ public class Client{
 	}
 
     public static void main(String[] args ){
+    	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     	String serverName = args[0];
         int dispatchport = Integer.parseInt(args[1]);
         int caport = Integer.parseInt(args[2]);
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
+        
         Client clientClass = null;
 		try {
 			clientClass = new Client(serverName, dispatchport, caport);
