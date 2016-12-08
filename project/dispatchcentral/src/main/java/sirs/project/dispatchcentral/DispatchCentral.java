@@ -294,7 +294,7 @@ public class DispatchCentral{
             Request request = requestObject.getRequest();
             ObjectOutputStream out = requestObject.getOut();
 
-            String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+"Minutes."; 
+            String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+" Minutes."; 
             try {
 				out.writeObject(message + "," + signAnswer(message));  
 				int rating = sendConfirmationRequest(request);
