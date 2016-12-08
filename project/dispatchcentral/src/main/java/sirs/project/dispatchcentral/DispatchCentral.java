@@ -37,6 +37,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
+
 import sirs.project.clientrequest.Request;
 
 public class DispatchCentral{
@@ -102,16 +104,6 @@ public class DispatchCentral{
     public void createNecessaryTables() {
         dbFunctions.createTable(c, dbConstants.requestsTableCreation);
         dbFunctions.createTable(c, dbConstants.ratingsTableCreation);
-
-        //Just for test
-        //dbTestingFunction();
-    }
-
-    public void dbTestingFunction() {
-        dbFunctions.insertUser(c, dbConstants.insertUser, "911111111");
-        dbFunctions.updateRating(c, dbConstants.updateRating, "911111111", 20);
-        System.out.println(dbFunctions.userExists(c, dbConstants.listPhoneNumbers, "9123213"));
-        System.out.println(dbFunctions.userRating(c, dbConstants.userRating, "911111111"));
     }
 
     public void checkConnectivity() {
@@ -167,6 +159,33 @@ public class DispatchCentral{
         }
     }
 
+    public String signAnswer(String message){
+            try {
+                byte[] b = message.getBytes("UTF-8");
+                Signature sig = Signature.getInstance("SHA1WithRSA");
+                sig.initSign(getPrivateKey());
+                sig.update(b);
+                byte[] signatureBytes = sig.sign();
+                return Base64.getEncoder().encodeToString(signatureBytes);
+            } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+    private PrivateKey getPrivateKey(){
+        FileInputStream fIn = null;
+        try {
+            fIn = new FileInputStream(KEYSTORE_PATH);
+            KeyStore keystore = KeyStore.getInstance("JKS");
+            keystore.load(fIn, PASS);
+            return (PrivateKey)keystore.getKey(ALIAS, PASS);
+        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     class QueueRemover implements Runnable {
         public QueueRemover() {}
 
@@ -181,39 +200,14 @@ public class DispatchCentral{
                 }
                 try {
                     System.out.println("Thread sleeping");
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
-
+                    e.printStackTrace();
                 }
             }
         }
 
-        private String signAnswer(String message){
-        	try {
-    			byte[] b = message.getBytes("UTF-8");
-    			Signature sig = Signature.getInstance("SHA1WithRSA");
-    			sig.initSign(getPrivateKey());
-    			sig.update(b);
-    			byte[] signatureBytes = sig.sign();
-    			return Base64.getEncoder().encodeToString(signatureBytes);
-    		} catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-    			e.printStackTrace();
-    			return null;
-    		}
-        }
 
-        private PrivateKey getPrivateKey(){
-    		FileInputStream fIn = null;
-    		try {
-    			fIn = new FileInputStream(KEYSTORE_PATH);
-    			KeyStore keystore = KeyStore.getInstance("JKS");
-    		    keystore.load(fIn, PASS);
-    		    return (PrivateKey)keystore.getKey(ALIAS, PASS);
-    		} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
-    			e.printStackTrace();
-    			return null;
-    		}
-    	}
 
         public int expectedTime(String clientCoords)
         {
@@ -301,38 +295,17 @@ public class DispatchCentral{
             ObjectOutputStream out = requestObject.getOut();
 
             String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+"Minutes."; 
-            //System.out.println("Removed "+ request.getUserId()+" Priority: "+request.getPriority());
             try {
 				out.writeObject(message + "," + signAnswer(message));  
 				int rating = sendConfirmationRequest(request);
 				if(rating<6 && rating>-6){
 					System.out.println("Rating: " + rating);
                     dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), rating);
-					//TODO: rate the user accordingly
 				}           
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
             log.info("Removed "+ request.getUserId()+"Priority: "+request.getPriority());
-            //dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
-        }
-
-        //Needs testing
-        public void updatePriorities(int value)
-        {
-            if(queue.size()==0) { return; }
-            else {
-              RequestObject firstRequest = queue.poll();
-              firstRequest.getRequest().updatePriority(value);
-              queue.add(firstRequest);
-
-              RequestObject request = null;
-              while((request = queue.poll())!=firstRequest)
-              {
-                  request.getRequest().updatePriority(value);
-                  queue.add(request);
-              }
-            }
         }
     }
 
@@ -343,7 +316,7 @@ public class DispatchCentral{
 
         private SSLSocket sslsocket;
 
-        private Firewall firewall = new Firewall(c, log);
+        private Filter filter = new Filter(c, log);
         public ServiceRequest(SSLSocket connection) {
             this.sslsocket = connection;
         }
@@ -384,7 +357,28 @@ public class DispatchCentral{
             	return null;
             }
         }
+        public void insertRequestQueue(RequestObject requestObject)
+        {
+            Request request = requestObject.getRequest();
+            dbFunctions.insertRequest(c, dbConstants.insertRequest, request);
 
+            synchronized(queue) {
+                System.out.println("Inserted on queue");
+                queue.add(requestObject);
+                System.out.println("Was inserted successfully");
+                log.info("Request added to queue");
+                System.out.println("Queue size: " + queue.size());
+                try{
+                    while(queue.size()!=0)
+                    {
+                        queue.wait();
+                    }
+                }catch(InterruptedException e)
+                {
+                  e.printStackTrace();
+                }
+             }
+        }
         public void run() {
 
             log.info("Started processing the request");
@@ -400,13 +394,72 @@ public class DispatchCentral{
                     log.info("Priority: " + request.getPriority());
 
                     if(verifySignature(request)){
-                    	//pass through the firewall filter
+                    	//pass through the filter
                         System.out.println("Inserting user on Db");
                         dbFunctions.insertUser(c, dbConstants.insertUser,  request.getUserId());
                         int userRating = dbFunctions.userRating(c, dbConstants.userRating, request.getUserId());
                         request.setPriority(userRating);
-                        firewall.filterRequest(new RequestObject(request, out, in), queue);
+                        RequestObject rObject = new RequestObject(request, out, in);
 
+
+                        //Test if it comes blank or empty
+                        /*
+                        rObject.getRequest().setUserId(" ");
+                        rObject.getRequest().setId("");
+                        rObject.getRequest().setMessage("   ");
+                        rObject.getRequest().setPriority(30);
+                        */
+                        
+                        //Check if date input is bad
+                        //rObject.getRequest().setDate(new Date(2018, 1, 1, 1, 1));
+                        
+                        int filterReturn = filter.filterRequest(rObject); 
+                         
+                        if(filterReturn == 0)
+                        {
+                            insertRequestQueue(rObject);
+
+                            //checking an abusive attack where the user duplicates the request:
+                            /*
+                            int duplicate = filter.filterRequest(rObject);
+                            System.out.println("Duplicate: " + duplicate);
+                            */
+                        }
+                        else
+                        {
+                            String message = null;
+
+                            if(filterReturn==-1)
+                            {
+                                //Last request too soon
+                                message = "Try again later";
+                                log.info("Filter Returned -1");
+                            }
+                            if(filterReturn==-2)
+                            {   
+                                //Duplicated request
+                                message = "Duplicated request";
+                                log.info("Filter Returned -2");
+                            }
+                            if(filterReturn==-3)
+                            {
+                                //blank
+                                message = "Invalid Request";
+                                log.info("Filter Returned -3");
+                            }  
+                            if(filterReturn==-4)
+                            {
+                                message = "You are blocked by the server";
+                                log.info("Filter Returned -4");
+                            }
+                            if(filterReturn==-5)
+                            {
+                                message = "Bad date input";
+                                log.info("Filter Returned -5");
+                            }
+
+                            out.writeObject(message+","+signAnswer(message));
+                        }
                     }else{
                     	log.error("Invalid Signature!!");
                     }

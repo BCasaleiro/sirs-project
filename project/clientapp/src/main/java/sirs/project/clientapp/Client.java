@@ -129,7 +129,7 @@ public class Client{
 			fromServer = (String)in.readObject();
 			if(fromServer != null){
 				 if(verifySignature(fromServer)){
-					 System.out.println("[DEBUG] Message was from a trusted source");
+					 //System.out.println("[DEBUG] Message was from a trusted source");
 					 System.out.println("Received: " + fromServer.split(",")[0]);
 				 }			 
 			 }
