@@ -84,12 +84,47 @@ trigger an appropriate response.
   \item Secure channel between user and Dispatch Central.
 \end{enumerate}
 
+\newpage
+
 \section{Solution}
+\subsection{Basic solution}
+The main goal of this sprint is to build the foundation and the architecture to facilitate the implementation
+of the security parts. There are no keys or certificates involved in this step so non-repudiation will not be
+our goal here.
+
+We will have a centralized Dispatch Central that will receive all the requests from the Users.
+
+Auditing mechanisms will be considered in this phase and for that we will use logs on the Central side.
+
+After processing the request, and approving it, the Dispatch sends the confirmation message that an ambulance is
+on the way. Otherwise the user will be accounted for the incorrect usage and warned of the possible consequences
+of further reckless behavior.
+
+After attending the emergency the team sent provides feedback regarding the truthfulness of the emergency.
+
+The user will be registered into a database with a ranking associated that will be used for the placement in queue.
+
+\subsection{Intermediate solution}
+In this phase, we will create manually all the keys and certificates\footnote{self-signed}.
+
+Each entity will have his own set of keys, but the certificates will have to be requested to the CA to obtain
+the public key.
+
+Each message sent by the user will be signed with his own private key.
+
+The Dispatch Central will retrieve the user public key from the certificate that was requested after receiving
+the message and then deciphers it. The procedure is the same for the message flow from the Dispatch to the user.
+
+In this phase we will also build a network level firewall, with some basic rules to discard duplicate packets
+and redirect connections to secure ports (HTTPS).
+
+\subsection{Advanced solution}
+On this last phase of the project, we will focus on fault tolerance on the primary server (DoS, crash, etc.).
+We will also focus in updating the firewall to an intrusion detection system. This IDS will receive the data
+from the sensors of the phone and analize its content to verify the veracity of the message.
 
 
-
-\section{Results / Implemented Solution}
-
+\section{Results}
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.50]{img/advanced-solution.png}
@@ -104,8 +139,8 @@ the user certificate to the certificate authority. Then the user is able to send
 When receiving a request the dispatch central asks the CA for the user certificate in order to decipher the request and
 passes it through a series of filters to exclude false ones. Only processing the accepted ones. The dispatch central then
 notifies the user either that help is on the way or that the request sent was false and reminds the user of the consequences.
-After an emergency team is dispatched the server asks the confirmation central if it was actually a real request.
-If it wasn't the user is penalized.
+After an emergency team is dispatched the server asks the confirmation central to rate the request depending on the
+authenticity of the emergency, awarding or penalizing the user
 
 All this comunications between the components are made using Java SSL Sockets in order to guarantee a secure channels and
 always cyphered using the proper certificates provided by the certificate authority.
