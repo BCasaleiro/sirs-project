@@ -13,14 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sirs.project.clientrequest.Request;
-public class Firewall
+public class Filter
 {
 	private Connection c = null;
 	private DatabaseFunctions dbFunctions = null;
 	private DatabaseConstants dbConstants = null;
 	private Logger log = null;
 
-	public Firewall(Connection c, Logger log){
+	public Filter(Connection c, Logger log){
 		this.c = c;
 		this.dbFunctions = new DatabaseFunctions();
 		this.dbConstants = new DatabaseConstants();
@@ -39,14 +39,12 @@ public class Firewall
 		}
 
 		//check if user sent a request in the last 20 seconds
-		System.out.println("Last Request From User: " +dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId()));
 		if(dbFunctions.lastRequestFromUser(c, dbConstants.lastRequestFromUser, request.getUserId())==1)
 		{
 			
 			dbFunctions.updateRating(c, dbConstants.updateRating, request.getUserId(), -1);
 			return -1;
 		}
-		
 
 		//verify if already exists
 		//dont serve it - Write to client
@@ -67,14 +65,6 @@ public class Firewall
 			return -5;
 		}
 		
-		
-		//verify if the location is to random
-		//verifyPreviousLocation(request);
-
-		//verify if there's something strange in the message
-		//get the priority of user
-		//reduce priority and insert on queue
-		//verifyStrangeMessage(request);
 		
         return 0;
 

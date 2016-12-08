@@ -200,9 +200,9 @@ public class DispatchCentral{
                 }
                 try {
                     System.out.println("Thread sleeping");
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
-
+                    e.printStackTrace();
                 }
             }
         }
@@ -295,7 +295,6 @@ public class DispatchCentral{
             ObjectOutputStream out = requestObject.getOut();
 
             String message = "Help is on the way. Expected Time: "+ expectedTime(request.getLocalization())+"Minutes."; 
-            //System.out.println("Removed "+ request.getUserId()+" Priority: "+request.getPriority());
             try {
 				out.writeObject(message + "," + signAnswer(message));  
 				int rating = sendConfirmationRequest(request);
@@ -317,7 +316,7 @@ public class DispatchCentral{
 
         private SSLSocket sslsocket;
 
-        private Firewall firewall = new Firewall(c, log);
+        private Filter filter = new Filter(c, log);
         public ServiceRequest(SSLSocket connection) {
             this.sslsocket = connection;
         }
@@ -395,7 +394,7 @@ public class DispatchCentral{
                     log.info("Priority: " + request.getPriority());
 
                     if(verifySignature(request)){
-                    	//pass through the firewall filter
+                    	//pass through the filter
                         System.out.println("Inserting user on Db");
                         dbFunctions.insertUser(c, dbConstants.insertUser,  request.getUserId());
                         int userRating = dbFunctions.userRating(c, dbConstants.userRating, request.getUserId());
@@ -414,15 +413,15 @@ public class DispatchCentral{
                         //Check if date input is bad
                         //rObject.getRequest().setDate(new Date(2018, 1, 1, 1, 1));
                         
-                        int firewallReturn = firewall.filterRequest(rObject); 
+                        int filterReturn = filter.filterRequest(rObject); 
                          
-                        if(firewallReturn == 0)
+                        if(filterReturn == 0)
                         {
                             insertRequestQueue(rObject);
 
                             //checking an abusive attack where the user duplicates the request:
                             /*
-                            int duplicate = firewall.filterRequest(rObject);
+                            int duplicate = filter.filterRequest(rObject);
                             System.out.println("Duplicate: " + duplicate);
                             */
                         }
@@ -430,33 +429,33 @@ public class DispatchCentral{
                         {
                             String message = null;
 
-                            if(firewallReturn==-1)
+                            if(filterReturn==-1)
                             {
                                 //Last request too soon
                                 message = "Try again later";
-                                log.info("Firewall Returned -1");
+                                log.info("Filter Returned -1");
                             }
-                            if(firewallReturn==-2)
+                            if(filterReturn==-2)
                             {   
                                 //Duplicated request
                                 message = "Duplicated request";
-                                log.info("Firewall Returned -2");
+                                log.info("Filter Returned -2");
                             }
-                            if(firewallReturn==-3)
+                            if(filterReturn==-3)
                             {
                                 //blank
                                 message = "Invalid Request";
-                                log.info("Firewall Returned -3");
+                                log.info("Filter Returned -3");
                             }  
-                            if(firewallReturn==-4)
+                            if(filterReturn==-4)
                             {
                                 message = "You are blocked by the server";
-                                log.info("Firewall Returned -4");
+                                log.info("Filter Returned -4");
                             }
-                            if(firewallReturn==-5)
+                            if(filterReturn==-5)
                             {
                                 message = "Bad date input";
-                                log.info("Firewall Returned -5");
+                                log.info("Filter Returned -5");
                             }
 
                             out.writeObject(message+","+signAnswer(message));
