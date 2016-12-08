@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
+\usepackage{soul}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -58,12 +59,14 @@ trigger an appropriate response.
 \begin{enumerate}
   \item Send an emergency request.
   \item Inform the estimated time for the user's request to be answered.
+  \item \st{Confirm or deny if there is an emergency nearby.}
 \end{enumerate}
 
 \subsection{Server Requirements}
 \begin{enumerate}
   \item Receive a request
   \item Insert a request in a queue depending on the user rating.
+  \item \st{Request confirmation from users nearby the emergency.}
   \item Log the requests.
   \item Send the expected response time.
   \item Send the confirmation that an ambulance is on route.
@@ -74,27 +77,41 @@ trigger an appropriate response.
 \subsection{Security Requirements}
 \begin{enumerate}
   \item Non-repudiation.
-  \item Fault tolerance to DoS.
-  \item Filter, responsible for filtering the requests.
+  \item \st{Fault tolerance to DoS.}
+  \item \st{Firewall, responsible for filtering the requests.}
+  \item \underline{Filter, responsible for filtering the requests.}
   \item Auditing mechanisms.
   \item Secure channel between user and Dispatch Central.
 \end{enumerate}
 
-\section{Implemented solution}
+\section{Solution}
 
-\begin{figure}[h]
+
+
+\section{Results / Implemented Solution}
+
+\begin{figure}[ht]
     \centering
     \includegraphics[scale=0.50]{img/advanced-solution.png}
 \end{figure}
 
-% TODO: Non-Repudiation
-% TODO: Fault tolerance to DoS.
-% TODO: Auditing mechanisms
-% TODO: Secure channel
+Our solution has two main components: the dispatch central and the user aplication.
+In order to meet the security requirements we also implemented a certificate authority and a confirmation central.
 
-\section{Results}
+The user aplication allow the user to send emergency requests. When starting the application it first sends
+the user certificate to the certificate authority. Then the user is able to send requests to the dispatch central.
+
+When receiving a request the dispatch central asks the CA for the user certificate in order to decipher the request and
+passes it through a series of filters to exclude false ones. Only processing the accepted ones. The dispatch central then
+notifies the user either that help is on the way or that the request sent was false and reminds the user of the consequences.
+After an emergency team is dispatched the server asks the confirmation central if it was actually a real request.
+If it wasn't the user is penalized.
+
+All this comunications between the components are made using Java SSL Sockets in order to guarantee a secure channels and
+always cyphered using the proper certificates provided by the certificate authority.
 
 \section{Evaluation}
+With our implementation we reached the majority of the security requirements proposed.
 
 \section{Conclusion}
 
@@ -103,7 +120,7 @@ trigger an appropriate response.
 \subsection{Tool References}
 \begin{description}
   \item [PostgreSQL] \href{https://www.postgresql.org}{Database to save the users.}
-  \item [javax.net.ssl.SSLServerSocket] \href{https://docs.oracle.com/javase/7/docs/api/java/net/Socket.html}{Establish a secure connection between the server and the application.}
+  \item [javax.net.ssl.SSLServerSocket] \href{https://docs.oracle.com/javase/7/docs/api/java/net/Socket.html}{Establish a secure connection.}
   \item [PostgreSQL JDBC] \href{https://jdbc.postgresql.org}{Driver to use PostgreSQL with Java.}
 \end{description}
 
