@@ -26,7 +26,7 @@ select * from requests;
 drop table requests, ratings;
 ```
 
-Para correr o projeto é necessário ir até à diretoria onde está o ficheiro **pom.xml**.
+*Para correr o projeto é necessário ir até à diretoria onde está o ficheiro **pom.xml**.*
 
 3) Compilar e instalar a dependência **certificaterequest**
 
