@@ -7,6 +7,7 @@
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{soul}
+\usepackage{indentfirst}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -44,7 +45,7 @@
 \end{titlepage}
 
 \section{Problem}
-First response emergency systems are a limited resource. Their usage makes a difference in life-or-death situations!
+First response emergency systems are a limited resource. Their usage makes difference in life-or-death situations!
 Requesting an ambulance is a serious matter.
 It should be simple, secure, fast and first of all always available.
 For that the Dispatch Center must be fault tolerant.
@@ -83,6 +84,12 @@ trigger an appropriate response.
   \item Auditing mechanisms.
   \item Secure channel to communicate.
 \end{enumerate}
+
+\begin{description}
+  \item [] \textit{Label}
+  \item [Requirement that we were not able to implement] \st{Requirement}
+  \item [New requirement implemented] \underline{Requirement}
+\end{description}
 
 \newpage
 
@@ -137,7 +144,7 @@ notifies the user either that help is on the way or that the request sent was fa
 After an emergency team is dispatched the server asks the confirmation central to rate the request depending on the
 authenticity of the emergency, awarding or penalizing the user.
 
-All this comunications between the components are made using Java SSL Sockets in order to guarantee a secure channels and
+All this comunications between the components are made using Java SSL Sockets in order to guarantee a secure channel and
 always cyphered using the proper certificates provided by the certificate authority.
 
 \begin{figure}[ht]
@@ -149,7 +156,7 @@ always cyphered using the proper certificates provided by the certificate author
 With our implementation we reached the majority of the security requirements proposed. As well as the majority of the
 functional requirements.
 
-We began by aproaching the \textbf{Auditing Mechanisms} point using the Log4j api to keep record of every request received and
+We began by aproaching the \textbf{Auditing Mechanisms} point using the Log4j API to keep record of every request received and
 action taken. Moving then to the \textbf{Secure Channel} point where we upgraded from Java Sockets to Java SSL Sockets, and to the
 \textbf{Non-Repudiation} point using the certificates and a certificate authority to distribute them.
 
@@ -166,6 +173,12 @@ the user location and implement new features like \textit{confimation of a nearb
 expectations it had to be put aside.
 
 \section{Conclusion}
+With the completion of this project, we can conclude that most of the requirements established in the proposal have been completed.
+Time management and planning in a project are extremely important, and even though we have passed several times in these phases
+there were unmet requirements, which in this case were the most ambitious in the proposal (port for Android and build an IDS).
+
+We built an application that provided a minimum of security for the users and the Dispatch Central, so we assume that we reached
+and completed our main goal from the beginning.
 
 \section{References}
 
