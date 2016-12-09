@@ -81,7 +81,7 @@ trigger an appropriate response.
   \item \st{Firewall, responsible for filtering the requests.}
   \item \underline{Filter, responsible for filtering the requests.}
   \item Auditing mechanisms.
-  \item Secure channel between user and Dispatch Central.
+  \item Secure channel to communicate.
 \end{enumerate}
 
 \newpage
@@ -125,11 +125,6 @@ from the sensors of the phone and analize its content to verify the veracity of 
 
 
 \section{Results}
-\begin{figure}[ht]
-    \centering
-    \includegraphics[scale=0.50]{img/advanced-solution.png}
-\end{figure}
-
 Our solution has two main components: the dispatch central and the user aplication.
 In order to meet the security requirements we also implemented a certificate authority and a confirmation central.
 
@@ -140,13 +135,35 @@ When receiving a request the dispatch central asks the CA for the user certifica
 passes it through a series of filters to exclude false ones. Only processing the accepted ones. The dispatch central then
 notifies the user either that help is on the way or that the request sent was false and reminds the user of the consequences.
 After an emergency team is dispatched the server asks the confirmation central to rate the request depending on the
-authenticity of the emergency, awarding or penalizing the user
+authenticity of the emergency, awarding or penalizing the user.
 
 All this comunications between the components are made using Java SSL Sockets in order to guarantee a secure channels and
 always cyphered using the proper certificates provided by the certificate authority.
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.45]{img/advanced-solution.png}
+\end{figure}
+
 \section{Evaluation}
-With our implementation we reached the majority of the security requirements proposed.
+With our implementation we reached the majority of the security requirements proposed. As well as the majority of the
+functional requirements.
+
+We began by aproaching the \textbf{Auditing Mechanisms} point using the Log4j api to keep a record of every request received and
+action taken. Moving then to the \textbf{Secure Channel} point where we upgraded from Java Sockets to Java SSL Sockets, and to the
+\textbf{Non-Repudiation} point using the certificates and a certificate authority to distribute them.
+
+Our initial goal in order to filter the requests received was to build a firewall but due to the lack of time we opted for a
+simpler solution and implemented a filter. This filter allow us to somewhat filter the invalid requests in the moment the server
+receives and deciphers them.
+
+Another point that we had to adapt was the \textbf{Fault Tolerance to DoS}. This initially was a really important point for us and we
+hoped to distribute our system and use a load balance to optimize resource use and avoid overload of a single resource. But with the
+project's development and the scarce time we decided that it was just not possible.
+
+We also hoped to move from a terminal that simulates a user application to an actual Android application where we would have access to
+the user location and implement new features like \textit{confimation of a nearby request based on the user location}. Although our
+expectations it had to be put aside.
 
 \section{Conclusion}
 
@@ -157,6 +174,7 @@ With our implementation we reached the majority of the security requirements pro
   \item [PostgreSQL] \href{https://www.postgresql.org}{Database to save the users.}
   \item [javax.net.ssl.SSLServerSocket] \href{https://docs.oracle.com/javase/7/docs/api/java/net/Socket.html}{Establish a secure connection.}
   \item [PostgreSQL JDBC] \href{https://jdbc.postgresql.org}{Driver to use PostgreSQL with Java.}
+  \item [Log4j] \href{http://logging.apache.org/log4j/2.x/}{Logging system.}
 \end{description}
 
 \end{document}
