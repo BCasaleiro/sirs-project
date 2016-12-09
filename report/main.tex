@@ -128,11 +128,11 @@ from the sensors of the phone and analize its content to verify the veracity of 
 Our solution has two main components: the dispatch central and the user aplication.
 In order to meet the security requirements we also implemented a certificate authority and a confirmation central.
 
-The user aplication allow the user to send emergency requests. When starting the application it first sends
+The user aplication allows the user to send emergency requests. When starting the application it first sends
 the user certificate to the certificate authority. Then the user is able to send requests to the dispatch central.
 
 When receiving a request the dispatch central asks the CA for the user certificate in order to decipher the request and
-passes it through a series of filters to exclude false ones. Only processing the accepted ones. The dispatch central then
+forwards it through a series of filters to exclude false ones, only processing the accepted ones. The dispatch central then
 notifies the user either that help is on the way or that the request sent was false and reminds the user of the consequences.
 After an emergency team is dispatched the server asks the confirmation central to rate the request depending on the
 authenticity of the emergency, awarding or penalizing the user.
@@ -149,15 +149,15 @@ always cyphered using the proper certificates provided by the certificate author
 With our implementation we reached the majority of the security requirements proposed. As well as the majority of the
 functional requirements.
 
-We began by aproaching the \textbf{Auditing Mechanisms} point using the Log4j api to keep a record of every request received and
+We began by aproaching the \textbf{Auditing Mechanisms} point using the Log4j api to keep record of every request received and
 action taken. Moving then to the \textbf{Secure Channel} point where we upgraded from Java Sockets to Java SSL Sockets, and to the
 \textbf{Non-Repudiation} point using the certificates and a certificate authority to distribute them.
 
 Our initial goal in order to filter the requests received was to build a firewall but due to the lack of time we opted for a
-simpler solution and implemented a filter. This filter allow us to somewhat filter the invalid requests in the moment the server
+simpler solution and implemented a filter. This filter allow us to somehow filter the invalid requests, such as blank packets, duplications or abusive behaviour, in the moment the server
 receives and deciphers them.
 
-Another point that we had to adapt was the \textbf{Fault Tolerance to DoS}. This initially was a really important point for us and we
+Another point that we had to adapt was the \textbf{Fault Tolerance to DoS}. Initially this was a really important point for us and we
 hoped to distribute our system and use a load balance to optimize resource use and avoid overload of a single resource. But with the
 project's development and the scarce time we decided that it was just not possible.
 
